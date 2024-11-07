@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Pagination?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="600.0" prefWidth="1000.0" styleClass="root-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.javaoop.HelloApplication">
+
+    <!-- Top Navigation Bar -->
+    <top>
+        <VBox styleClass="navigation-container">
+            <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #673ab7; -fx-padding: 10;">
+                <Label style="-fx-text-fill: white; -fx-font-size: 18px;" text="Article Recommendation System" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="userProfileButton" styleClass="profile-button" text="User Profile" />
+                <padding>
+                    <Insets left="20.0" right="20.0" />
+                </padding>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Left Categories Sidebar -->
+    <left>
+        <VBox prefWidth="200" style="-fx-background-color: white;" styleClass="categories-container">
+            <padding>
+                <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+            </padding>
+            <Label style="-fx-font-weight: bold; -fx-font-size: 16px;" text="Categories">
+                <VBox.margin>
+                    <Insets bottom="20.0" />
+                </VBox.margin>
+            </Label>
+            <VBox spacing="10.0">
+                <Button styleClass="category-button" text="Recommended" />
+                <Button styleClass="category-button" text="Technology" />
+                <Button styleClass="category-button" text="Health" />
+                <Button styleClass="category-button" text="Sports" />
+                <Button styleClass="category-button" text="AI" />
+                <Button styleClass="category-button" text="Science" />
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- Main Content Area -->
+    <center>
+        <VBox styleClass="main-content-container">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+
+            <!-- Search Bar -->
+            <HBox alignment="CENTER" spacing="10.0" style="-fx-background-color: #FFFFFF;">
+                <padding>
+                    <Insets top="10.0" left="20.0" right="20" bottom="10.0"/>
+                </padding>
+                <TextField fx:id="searchField" maxHeight="-Infinity" prefHeight="10.0" prefWidth="688.0" promptText="Search articles..." styleClass="search-field" HBox.hgrow="ALWAYS">
+                    <HBox.margin>
+                        <Insets right="10.0" />
+                    </HBox.margin>
+                </TextField>
+                <Button styleClass="search-button" text="Search" />
+            </HBox>
+
+            <!-- Articles ScrollPane -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color: #FFFFFF;" VBox.vgrow="ALWAYS">
+                <VBox fx:id="articlesContainer" spacing="20.0" style="-fx-padding: 20;">
+
+                    <!-- Example Article Card -->
+                    <VBox styleClass="article-card">
+                        <padding>
+                            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                        </padding>
+                        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Machine Learning in Healthcare" />
+                        <HBox spacing="10.0">
+                            <Label style="-fx-text-fill: #666;" text="Category: AI/ML" />
+                            <Label style="-fx-text-fill: #666;" text="Similarity Score: 95%" />
+                        </HBox>
+                        <Button styleClass="read-more-button" text="Read More">
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </Button>
+                    </VBox>
+
+                    <!-- Example Article Card 2 -->
+                    <VBox styleClass="article-card">
+                        <padding>
+                            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                        </padding>
+                        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Latest Developments in Natural Language Processing" />
+                        <HBox spacing="10.0">
+                            <Label style="-fx-text-fill: #666;" text="Category: Technology" />
+                            <Label style="-fx-text-fill: #666;" text="Similarity Score: 88%" />
+                        </HBox>
+                        <Button styleClass="read-more-button" text="Read More">
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </Button>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+
+            <!-- Pagination -->
+            <HBox alignment="CENTER">
+                <Pagination fx:id="articlePagination" maxPageIndicatorCount="5" pageCount="10" />
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

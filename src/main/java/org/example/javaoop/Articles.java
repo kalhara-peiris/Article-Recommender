@@ -1,5 +1,6 @@
 package org.example.javaoop;
 
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -18,11 +19,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class InsertArticles {
-    private static final String API_KEY = "32afeec9c650405b9fb9e4a45ddd9c8c";
-    private static final String dbUrl = "jdbc:mysql://localhost:3306/javacw";
-    private static final String dbUser = "root";
-    private static final String dbPassword = "";
+public class Articles {
+    private static final String API_KEY = "4e6f822740374499be7c2a5f6d721592";
+
+    //Make them protected so child class can access
+    protected static final String dbUrl = "jdbc:mysql://localhost:3306/javacw";
+    protected static final String dbUser = "root";
+    protected static final String dbPassword = "";
+
+    protected Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+    }
 
     // Map API query terms to category names for better results
     private Map<String, String> categoryQueries = new HashMap<>() {{
@@ -30,7 +37,6 @@ public class InsertArticles {
         put("health", "Health");
         put("sports", "Sport");
         put("artificial-intelligence", "AI");
-        put("business", "Business");
         put("entertainment", "Entertainment");
         put("science", "Science");
         put("general", "General");
@@ -53,7 +59,7 @@ public class InsertArticles {
 
             System.out.println("\nCollecting articles for category: " + category);
 
-            while (successCounts.get(category) < 20 && pageNumber <= maxAttempts) {
+            while (successCounts.get(category) < 10 && pageNumber <= maxAttempts) {
                 try {
                     // For AI category, use a different approach
                     String apiUrl;
@@ -81,7 +87,7 @@ public class InsertArticles {
                     JSONArray articles = jsonResponse.getJSONArray("articles");
                     if (articles.length() == 0) break;
 
-                    for (int i = 0; i < articles.length() && successCounts.get(category) < 20; i++) {
+                    for (int i = 0; i < articles.length() && successCounts.get(category) < 10; i++) {
                         JSONObject article = articles.getJSONObject(i);
                         String title = article.optString("title", "").trim();
                         String articleUrl = article.optString("url", "").trim();
@@ -171,7 +177,7 @@ public class InsertArticles {
 
     // Main method to run the collector
     public static void main(String[] args) {
-        InsertArticles collector = new InsertArticles();
+        Articles collector = new Articles();
         collector.collectArticles();
     }
 }
