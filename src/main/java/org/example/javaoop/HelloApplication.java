@@ -13,9 +13,9 @@ import java.io.IOException;
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("recommend.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("signIn.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
-        scene.getStylesheets().add(getClass().getResource("articleStyle.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("signIn.css").toExternalForm());
 
 
         stage.setTitle("Hello!");

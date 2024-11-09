@@ -1,0 +1,112 @@
+/* styles.css */
+
+.root {
+    -fx-background-color: #f5f5f5;
+}
+
+/* Top Navigation Bar */
+.top-bar {
+    -fx-background-color: #673ab7;
+    -fx-padding: 10 20;
+    -fx-min-height: 50;
+    -fx-alignment: center-left;
+}
+
+.app-title {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* Login Card */
+.login-card {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0, 0, 4);
+    -fx-max-width: 400;
+    -fx-spacing: 20;
+    -fx-max-height:350;
+}
+
+.header-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+.header-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #666666;
+}
+
+.form-container {
+    -fx-spacing: 20;
+    -fx-padding: 20 0;
+}
+
+/* Input Fields */
+.input-label {
+    -fx-text-fill: #666666;
+    -fx-font-size: 14px;
+}
+
+.input-field {
+    -fx-background-color: #f5f5f5;
+    -fx-background-radius: 4;
+    -fx-padding: 12;
+    -fx-font-size: 14px;
+}
+
+.input-field:focused {
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: #673ab7;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+/* Remember Me Checkbox */
+.remember-me {
+    -fx-text-fill: #666666;
+    -fx-font-size: 14px;
+}
+
+.remember-me .box {
+    -fx-background-color: #f5f5f5;
+    -fx-border-color: #673ab7;
+    -fx-border-radius: 4;
+}
+
+.remember-me:selected .mark {
+    -fx-background-color: #673ab7;
+}
+
+/* Links */
+.forgot-password,
+.create-account-link {
+    -fx-text-fill: #673ab7;
+    -fx-font-size: 14px;
+    -fx-border-width: 0;
+}
+
+.forgot-password:hover,
+.create-account-link:hover {
+    -fx-underline: true;
+}
+
+/* Sign In Button */
+.sign-in-button {
+    -fx-background-color: #673ab7;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-padding: 12 20;
+    -fx-background-radius: 25;
+    -fx-cursor: hand;
+}
+
+.sign-in-button:hover {
+    -fx-background-color: #7e57c2;
+}
+
+.sign-in-button:pressed {
+    -fx-background-color: #5e35b1;
+}

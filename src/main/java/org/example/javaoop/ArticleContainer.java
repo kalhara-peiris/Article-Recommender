@@ -1,7 +1,10 @@
 
 package org.example.javaoop;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -78,7 +81,7 @@ public class ArticleContainer  {
     }
 
     private void setupButtonHandlers() {
-        backButton.setOnAction(event -> handleBack());
+
         likeButton.setOnAction(event -> handleLike());
         dislikeButton.setOnAction(event -> handleDislike());
         saveButton.setOnAction(event -> handleSave());
@@ -100,7 +103,7 @@ public class ArticleContainer  {
                 });
 
             } catch (IOException e) {
-                showError("Error", "Could not load article content: " + e.getMessage());
+                showError("Error", "Could notss load article content: " + e.getMessage());
             }
         }).start();
     }
@@ -125,6 +128,16 @@ public class ArticleContainer  {
         recordInteraction("SAVE");
         saveButton.setDisable(true);
         showSuccess("Article saved successfully!");
+    }
+
+    public void recommended(ActionEvent event) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("recommend.fxml"));
+        Parent root = fxmlLoader.load();
+        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("articleStyle.css").toExternalForm());
+        stage.setScene(scene);
+        stage.show();
     }
 
     private void recordInteraction(String interactionType) {
@@ -183,25 +196,7 @@ public class ArticleContainer  {
         return null;
     }
 
-    private void handleBack() {
-        try {
-            // Load the technology view
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("technology-view.fxml"));
-            Scene scene = new Scene(loader.load());
 
-            // Get the TechnologyController and initialize it if needed
-            TechnologyController controller = loader.getController();
-            controller.setCurrentUsername(currentUsername);
-
-            // Get the current stage and set the new scene
-            Stage stage = (Stage) backButton.getScene().getWindow();
-            stage.setScene(scene);
-            stage.show();
-
-        } catch (IOException e) {
-            showError("Navigation Error", "Could not return to technology view: " + e.getMessage());
-        }
-    }
 
     public void setCurrentUsername(String username) {
         this.currentUsername = username;
