@@ -7,6 +7,7 @@ module org.example.javaoop {
     requires jsoup;
     requires stanford.corenlp;
     requires org.apache.opennlp.tools;
+    requires java.desktop;
 
 
     opens org.example.javaoop to javafx.fxml;

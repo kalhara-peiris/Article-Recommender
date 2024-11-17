@@ -20,7 +20,7 @@
             <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #673ab7; -fx-padding: 10;">
                 <Label style="-fx-text-fill: white; -fx-font-size: 18px;" text="Article Recommendation System" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="userProfileButton" styleClass="profile-button" text="User Profile" />
+                <Button fx:id="userProfileButton" styleClass="profile-button" text="User Profile" onAction="#userProfile"/>
                 <padding>
                     <Insets left="20.0" right="20.0" />
                 </padding>
@@ -82,7 +82,7 @@
                         </padding>
                         <Label fx:id="articleTitle1" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Machine Learning in Healthcare" />
                         <HBox spacing="10.0">
-                            <Label style="-fx-text-fill: #666;" text="Category: AI/ML" />
+                            <Label fx:id="category1" style="-fx-text-fill: #666;" text="Category: Health" />
                             <Label style="-fx-text-fill: #666;" text="Similarity Score: 95%" />
                         </HBox>
                         <Button fx:id="readMore1" styleClass="read-more-button" text="Read More">
@@ -99,7 +99,7 @@
                         </padding>
                         <Label fx:id="articleTitle2" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Latest Developments in Natural Language Processing" />
                         <HBox spacing="10.0">
-                            <Label style="-fx-text-fill: #666;" text="Category: Technology" />
+                            <Label fx:id="category2" style="-fx-text-fill: #666;" text="Category: Health" />
                             <Label style="-fx-text-fill: #666;" text="Similarity Score: 88%" />
                         </HBox>
                         <Button fx:id="readMore2" styleClass="read-more-button" text="Read More">
@@ -112,9 +112,9 @@
                         <padding>
                             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
                         </padding>
-                        <Label fx:id="articleTitle3" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Machine Learning in Healthcare" />
+                        <Label  fx:id="articleTitle3" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Machine Learning in Healthcare" />
                         <HBox spacing="10.0">
-                            <Label style="-fx-text-fill: #666;" text="Category: AI/ML" />
+                            <Label fx:id="category3" style="-fx-text-fill: #666;" text="Category: Health" />
                             <Label style="-fx-text-fill: #666;" text="Similarity Score: 95%" />
                         </HBox>
                         <Button fx:id="readMore3" styleClass="read-more-button" text="Read More">

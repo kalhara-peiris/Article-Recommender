@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="600.0" prefWidth="1000.0" styleClass="root-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.javaoop.HelloApplication">
+<BorderPane prefHeight="600.0" prefWidth="1000.0" styleClass="root-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.javaoop.RecommendController">
 
     <!-- Top Navigation Bar -->
     <top>
@@ -19,7 +19,7 @@
             <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #673ab7; -fx-padding: 10;">
                 <Label style="-fx-text-fill: white; -fx-font-size: 18px;" text="Article Recommendation System" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="userProfileButton" styleClass="profile-button" text="User Profile" />
+                <Button fx:id="userProfileButton" styleClass="profile-button" text="User Profile" onAction="#userProfile"/>
                 <padding>
                     <Insets left="20.0" right="20.0" />
                 </padding>
@@ -78,12 +78,12 @@
                         <padding>
                             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
                         </padding>
-                        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Machine Learning in Healthcare" />
+                        <Label fx:id="articleTitle1" style="-fx-text-fill: #666; -fx-font-size: 16px; -fx-font-weight: bold;" text="Machine Learning in Healthcare" />
                         <HBox spacing="10.0">
-                            <Label style="-fx-text-fill: #666;" text="Category: AI/ML" />
+                            <Label fx:id="category1" style="-fx-text-fill: #666;" text="Category: AI/ML" />
                             <Label style="-fx-text-fill: #666;" text="Similarity Score: 95%" />
                         </HBox>
-                        <Button styleClass="read-more-button" text="Read More" onAction="#ArticleView">
+                        <Button fx:id="readMore1" styleClass="read-more-button" text="Read More" onAction="#ArticleView">
                             <VBox.margin>
                                 <Insets top="10.0" />
                             </VBox.margin>
@@ -95,12 +95,12 @@
                         <padding>
                             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
                         </padding>
-                        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Latest Developments in Natural Language Processing" />
+                        <Label fx:id="articleTitle2" style="-fx-text-fill: #666; -fx-font-size: 16px; -fx-font-weight: bold;" text="Latest Developments in Natural Language Processing" />
                         <HBox spacing="10.0">
-                            <Label style="-fx-text-fill: #666;" text="Category: Technology" />
+                            <Label fx:id="category2" style="-fx-text-fill: #666;" text="Category: Technology" />
                             <Label style="-fx-text-fill: #666;" text="Similarity Score: 88%" />
                         </HBox>
-                        <Button styleClass="read-more-button" text="Read More">
+                        <Button  fx:id="readMore2" styleClass="read-more-button" text="Read More">
                             <VBox.margin>
                                 <Insets top="10.0" />
                             </VBox.margin>
@@ -110,12 +110,12 @@
                         <padding>
                             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
                         </padding>
-                        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Machine Learning in Healthcare" />
+                        <Label fx:id="articleTitle3" style="-fx-text-fill: #666; -fx-font-size: 16px; -fx-font-weight: bold;" text="Machine Learning in Healthcare" />
                         <HBox spacing="10.0">
-                            <Label style="-fx-text-fill: #666;" text="Category: AI/ML" />
+                            <Label fx:id="category3" style="-fx-text-fill: #666;" text="Category: AI/ML" />
                             <Label style="-fx-text-fill: #666;" text="Similarity Score: 95%" />
                         </HBox>
-                        <Button styleClass="read-more-button" text="Read More">
+                        <Button  fx:id="readMore3" styleClass="read-more-button" text="Read More">
                             <VBox.margin>
                                 <Insets top="10.0" />
                             </VBox.margin>
@@ -123,11 +123,12 @@
                     </VBox>
                 </VBox>
             </ScrollPane>
+            <HBox alignment="CENTER">
+                <Button fx:id="skipButton" text="Skip"/>
+            </HBox>
 
             <!-- Pagination -->
-            <HBox alignment="CENTER">
-                <Pagination fx:id="articlePagination" maxPageIndicatorCount="5" pageCount="10" />
-            </HBox>
+
         </VBox>
     </center>
 </BorderPane>

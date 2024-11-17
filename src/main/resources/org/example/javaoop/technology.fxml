@@ -20,7 +20,7 @@
             <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #673ab7; -fx-padding: 10;">
                 <Label style="-fx-text-fill: white; -fx-font-size: 18px;" text="Article Recommendation System" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="userProfileButton" styleClass="profile-button" text="User Profile" />
+                <Button fx:id="userProfileButton" styleClass="profile-button" text="User Profile" onAction="#userProfile" />
                 <padding>
                     <Insets left="20.0" right="20.0" />
                 </padding>

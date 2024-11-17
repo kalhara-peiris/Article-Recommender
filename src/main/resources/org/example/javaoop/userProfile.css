@@ -1,0 +1,134 @@
+/* Main Container Styles */
+.main-container {
+    -fx-background-color: #f5f5f5;
+}
+
+/* Navigation Bar Styles */
+.nav-bar {
+    -fx-background-color: #673ab7;
+    -fx-padding: 10 20;
+    -fx-spacing: 20;
+    -fx-pref-height: 50;
+    -fx-alignment: center-left;
+}
+
+
+.back-button {
+    -fx-background-color: #7e57c2;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 5 15;
+    -fx-background-radius: 15;
+}
+
+.header-title {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-padding: 0 0 0 280;
+}
+
+/* Profile Section Styles */
+.profile-header {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-spacing: 20;
+    -fx-background-radius: 4;
+}
+
+.profile-circle {
+    -fx-fill: #673ab7;
+}
+
+.profile-info {
+    -fx-spacing: 5;
+}
+
+.username {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.member-since {
+    -fx-font-size: 14px;
+    -fx-text-fill: #666666;
+}
+
+/* Stats Section Styles */
+.stats-container {
+    -fx-background-color: white;
+    -fx-padding: 10;
+    -fx-spacing: 20;
+    -fx-background-radius: 4;
+}
+
+.stat-box {
+    -fx-background-color: #e3f2fd;
+    -fx-padding: 10 20;
+    -fx-font-size: 14px;
+    -fx-background-radius: 4;
+    -fx-pref-width: 160;
+    -fx-alignment: center;
+}
+
+/* Tabs Section Styles */
+.tabs-container {
+    -fx-background-color: #f5f5f5;
+    -fx-background-radius: 4;
+}
+
+.tab-pane {
+    -fx-tab-min-width: 130px;
+    -fx-background-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.tab-pane > .tab-header-area {
+    -fx-background-color: transparent; /* For the area behind the tabs */
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: transparent; /* For the header background */
+}
+
+.tab {
+    -fx-background-color: #f5f5f5;
+    -fx-padding: 10 23;
+}
+
+.tab:selected {
+    -fx-background-color: #673ab7;
+    -fx-focus-color : transparent;
+}
+
+.tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
+.tab .tab-label {
+    -fx-text-fill: #666666;
+    -fx-font-size: 14px;
+}
+
+/* Article List Styles */
+.articles-list {
+    -fx-padding: 20;
+    -fx-spacing: 20;
+}
+
+.article-item {
+    -fx-background-color: white;
+    -fx-padding: 15;
+    -fx-spacing: 5;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 4;
+}
+
+.article-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #666666;
+}
+
+.article-meta {
+    -fx-font-size: 14px;
+    -fx-text-fill: #666666;
+}

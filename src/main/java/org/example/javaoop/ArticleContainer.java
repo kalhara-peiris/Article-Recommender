@@ -1,19 +1,20 @@
 
 package org.example.javaoop;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.fxml.FXMLLoader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import java.io.IOException;
+import java.util.UUID;
 
 public class ArticleContainer  {
     @FXML
@@ -59,14 +61,35 @@ public class ArticleContainer  {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
 
+    @FXML
     public void initialize() {
-        setupButtonHandlers();
+        Platform.runLater(() -> {
+            if (currentUsername == null) {
+                try {
+                    Stage stage = (Stage) likeButton.getScene().getWindow();
+                    if (stage != null && stage.getUserData() instanceof HelloApplication) {
+                        HelloApplication app = (HelloApplication) stage.getUserData();
+                        currentUsername = app.getCurrentUsername();
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error in initialize: " + e.getMessage());
+                }
+            }
+            setupButtonHandlers();
+        });
     }
 
+
+
     public void setArticleData(String articleId, String title, String url, String category, String username) {
+        setCurrentUsername(username);
+        if (username == null || username.trim().isEmpty()) {
+            showError("Error", "No user is currently logged in. Please log in again.");
+            return;
+        }
         this.articleId = articleId;
         this.articleUrl = url;
-        this.currentUsername = username;
+
 
         articleTitle.setText(title);
         categoryLabel.setText("Category: " + category);
@@ -98,7 +121,7 @@ public class ArticleContainer  {
                 String content = doc.select("article, .article-content, .story-content, .main-content, .post-content").text();
 
                 // Update UI on JavaFX Application Thread
-                javafx.application.Platform.runLater(() -> {
+                Platform.runLater(() -> {
                     contentArea.setText(content);
                 });
 
@@ -109,6 +132,10 @@ public class ArticleContainer  {
     }
 
     private void handleLike() {
+        if (currentUsername == null || currentUsername.trim().isEmpty()) {
+            showError("Error", "No user is currently logged in. Please log in again.");
+            return;
+        }
         recordInteraction("LIKE");
         updateUserPreference(5); // Increase preference score by 5
         likeButton.setDisable(true);
@@ -141,8 +168,8 @@ public class ArticleContainer  {
     }
 
     private void recordInteraction(String interactionType) {
-        try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String interactionId = java.util.UUID.randomUUID().toString();
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String interactionId = UUID.randomUUID().toString();
             String query = "INSERT INTO userinteraction (interactionID, username, ArticleID, interactionType) " +
                     "VALUES (?, ?, ?, ?)";
 
@@ -159,7 +186,7 @@ public class ArticleContainer  {
     }
 
     private void updateUserPreference(int scoreChange) {
-        try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             // Get the category ID for this article
             String categoryId = getCategoryId();
             if (categoryId != null) {
@@ -181,7 +208,7 @@ public class ArticleContainer  {
     }
 
     private String getCategoryId() {
-        try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String query = "SELECT categoryID FROM ArticleCategory WHERE ArticleID = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, articleId);
@@ -207,7 +234,7 @@ public class ArticleContainer  {
     }
 
     private void showError(String title, String content) {
-        javafx.application.Platform.runLater(() -> {
+        Platform.runLater(() -> {
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle(title);
             alert.setHeaderText(null);
@@ -217,7 +244,7 @@ public class ArticleContainer  {
     }
 
     private void showSuccess(String message) {
-        javafx.application.Platform.runLater(() -> {
+        Platform.runLater(() -> {
             Alert alert = new Alert(AlertType.INFORMATION);
             alert.setTitle("Success");
             alert.setHeaderText(null);

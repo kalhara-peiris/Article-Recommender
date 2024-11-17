@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            prefWidth="1000" prefHeight="600"
+            styleClass="main-container"
+            fx:controller="org.example.javaoop.userProfileController">
+
+    <!-- Top Navigation Bar -->
+    <VBox AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0">
+        <HBox styleClass="nav-bar">
+            <Button fx:id="backButton" styleClass="back-button" text="← Back" />
+            <Label styleClass="header-title" text="Article Recommendation System" />
+        </HBox>
+    </VBox>
+
+    <!-- Profile Header -->
+    <HBox styleClass="profile-header" AnchorPane.topAnchor="70"
+          AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50">
+        <Circle fx:id="profileCircle" styleClass="profile-circle" radius="30" />
+        <VBox styleClass="profile-info">
+            <Label fx:id="username" styleClass="username" text="Username" />
+            <Label fx:id="memberSince" styleClass="member-since" text="Member since: January 2024" />
+        </VBox>
+    </HBox>
+
+    <!-- Stats Bar -->
+    <HBox spacing="20" styleClass="stats-container"
+          AnchorPane.topAnchor="160" AnchorPane.leftAnchor="50"
+          AnchorPane.rightAnchor="50">
+        <Label fx:id="readCount" styleClass="stat-box" text="Read: 25 articles" />
+        <Label fx:id="likeCount" styleClass="stat-box" text="Liked: 15 articles" />
+        <Label fx:id="saveCount" styleClass="stat-box" text="Saved: 10 articles" />
+        <Label fx:id="dislikeCount" styleClass="stat-box" text="Disliked: 5 articles" />
+        <Label fx:id="skipCount" styleClass="stat-box" text="Skipped: 8" />
+    </HBox>
+
+    <!-- Tabs Section -->
+    <TabPane fx:id="tabPane" AnchorPane.topAnchor="250"
+             AnchorPane.bottomAnchor="20" AnchorPane.leftAnchor="50"
+             AnchorPane.rightAnchor="50">
+        <tabs>
+            <Tab text="Liked" closable="false"/>
+            <Tab text="Read" closable="false" />
+            <Tab text="Saved" closable="false" />
+            <Tab text="Disliked" closable="false" />
+            <Tab text="Skipped" closable="false"/>
+        </tabs>
+    </TabPane>
+
+</AnchorPane>

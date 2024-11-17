@@ -7,7 +7,7 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.example.javaoop.HelloController"
+      fx:controller="org.example.javaoop.SignInPage"
       styleClass="root"
       stylesheets="@signIn.css">
 
@@ -34,7 +34,7 @@
                 <!-- Email Field -->
                 <VBox spacing="5">
                     <Label text="Username" styleClass="input-label"/>
-                    <TextField fx:id="username"
+                    <TextField fx:id="signInUsername"
                                promptText="Enter your Username"
                                styleClass="input-field"/>
                 </VBox>
@@ -42,7 +42,7 @@
                 <!-- Password Field -->
                 <VBox spacing="5">
                     <Label text="Password" styleClass="input-label"/>
-                    <PasswordField fx:id="passwordField"
+                    <PasswordField fx:id="signInPassword"
                                    promptText="Enter your password"
                                    styleClass="input-field"/>
                 </VBox>
@@ -51,6 +51,7 @@
 
                 <!-- Sign In Button -->
                 <Button text="Sign In"
+                        onAction="#handleSignIn"
                         styleClass="sign-in-button"
                         maxWidth="Infinity"/>
 
