@@ -9,7 +9,7 @@
 <?import javafx.scene.shape.Circle?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.example.javaoop.HelloApplication"
+            fx:controller="org.example.javaoop.adminController"
             stylesheets="@adminUI.css"
             prefHeight="400.0" prefWidth="600.0">
     <!-- Left Sidebar -->
@@ -51,14 +51,14 @@
         <HBox spacing="15" styleClass="stats-container">
             <VBox styleClass="stats-card">
                 <Label text="Total Articles" styleClass="stats-label"/>
-                <Label text="156" styleClass="stats-value"/>
+                <Label fx:id="articleCountLabel" text="156" styleClass="stats-value"/>
                 <Separator/>
                 <Label text="↑ 12% from last fetch" styleClass="stats-trend,positive"/>
             </VBox>
 
             <VBox styleClass="stats-card">
                 <Label text="Users" styleClass="stats-label"/>
-                <Label text="142" styleClass="stats-value"/>
+                <Label fx:id="userCount" text="142" styleClass="stats-value"/>
                 <Separator/>
                 <Label text="91% completion" styleClass="stats-trend,positive"/>
             </VBox>
@@ -73,7 +73,7 @@
 
         <!-- Action Buttons -->
         <HBox spacing="15" styleClass="action-buttons">
-            <Button text="Start Collection" styleClass="action-button,primary"/>
+            <Button fx:id="startCollectionButton" onAction="#handleStartCollection" text="Start Collection" styleClass="action-button,primary"/>
             <Button text="Start Categorization" styleClass="action-button,secondary"/>
         </HBox>
 
@@ -85,21 +85,21 @@
             <VBox styleClass="progress-log">
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <Circle radius="4" styleClass="status-circle,active"/>
-                    <Label text="Collecting articles..." styleClass="status-text"/>
+                    <Label fx:id="statusText" text="Collecting articles..." styleClass="status-text"/>
                 </HBox>
 
                 <!-- Progress Bar -->
-                <ProgressBar progress="0.95" styleClass="custom-progress"/>
-                <Label text="95 articles collected out of target 100" styleClass="progress-text"/>
-                <Label text="Average collection rate: 12 articles/minute" styleClass="collection-rate"/>
+                <ProgressBar fx:id="progressBar" progress="0.95" styleClass="custom-progress"/>
+                <Label fx:id="progressText" text="95 articles collected out of target 100" styleClass="progress-text"/>
+                <Label fx:id="collectionRateLabel" text="Average collection rate: 12 articles/minute" styleClass="collection-rate"/>
 
                 <!-- Status Bar -->
                 <VBox styleClass="status-bar">
                     <HBox spacing="8">
                         <Label text="Current Status:" styleClass="status-label"/>
-                        <Label text="Collection in Progress (95 of 100 articles)" styleClass="status-value"/>
+                        <Label fx:id="currentStatusLabel" text="Collection in Progress (95 of 100 articles)" styleClass="status-value"/>
                     </HBox>
-                    <Label text="Last Updated: 2 minutes ago" styleClass="status-time"/>
+                    <Label fx:id="lastUpdatedLabel" text="Last Updated: 2 minutes ago" styleClass="status-time"/>
                 </VBox>
             </VBox>
         </VBox>

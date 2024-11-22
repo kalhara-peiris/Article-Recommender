@@ -40,9 +40,11 @@ public class Articles {
         put("science", "Science");
     }};
 
-    public void collectArticles() {
+    public void collectArticles(ProgressCallback progressCallback) {
         Map<String, Integer> successCounts = new HashMap<>();
         OkHttpClient client = new OkHttpClient();
+        int totalTargetArticles=50;
+        int currentTotalArticles=0;
 
         // Initialize success counts
         for (String category : categoryQueries.values()) {
@@ -102,7 +104,10 @@ public class Articles {
                         // Check if article is fetchable with Jsoup
                         if (canFetchContent(articleUrl)) {
                             if (storeArticle(title, articleUrl)) {
+                                currentTotalArticles++;
                                 successCounts.put(category, successCounts.get(category) + 1);
+                                double progress = (double) currentTotalArticles / totalTargetArticles;
+                                progressCallback.onProgress(progress);
                                 System.out.println(category + " - Added article " + successCounts.get(category) + ": " + title);
                             }
                         }
@@ -125,6 +130,9 @@ public class Articles {
             System.out.printf("%s: %d articles added successfully%n",
                     entry.getKey(), entry.getValue());
         }
+    }
+    public interface ProgressCallback {
+        void onProgress(double progress);
     }
 
     private boolean canFetchContent(String url) {
@@ -154,7 +162,7 @@ public class Articles {
     }
 
     private boolean storeArticle(String title, String url) {
-        String insertQuery = "INSERT IGNORE INTO Article (ArticleID, title, url) VALUES (?, ?, ?)";
+        String insertQuery = "INSERT IGNORE INTO article (ArticleID, title, url) VALUES (?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
              PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
@@ -173,9 +181,6 @@ public class Articles {
         }
     }
 
-    // Main method to run the collector
-    public static void main(String[] args) {
-        Articles collector = new Articles();
-        collector.collectArticles();
-    }
+
+
 }
