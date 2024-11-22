@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.shape.Circle?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.javaoop.HelloApplication"
+            stylesheets="@adminUI.css"
+            prefHeight="400.0" prefWidth="600.0">
+    <!-- Left Sidebar -->
+    <VBox styleClass="sidebar" prefWidth="220" prefHeight="600">
+        <!-- Admin Logo/Title Area -->
+        <HBox styleClass="sidebar-header" prefHeight="60">
+            <Label text="Admin Dashboard" styleClass="sidebar-title"/>
+        </HBox>
+
+        <!-- Sidebar Menu -->
+        <VBox styleClass="sidebar-menu" spacing="8">
+            <Button text="Dashboard" styleClass="menu-item,active"/>
+            <Button text="View Articles" styleClass="menu-item"/>
+            <Button text="View Users" styleClass="menu-item"/>
+            <Button text="Log out" styleClass="menu-item"/>
+        </VBox>
+
+        <!-- Admin Profile -->
+        <VBox styleClass="admin-profile" VBox.vgrow="ALWAYS" alignment="BOTTOM_LEFT">
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Circle radius="20" styleClass="profile-circle"/>
+                <VBox>
+                    <Label text="Admin User" styleClass="admin-name"/>
+                    <Label text="Administrator" styleClass="admin-role"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </VBox>
+
+    <!-- Main Content Area -->
+    <VBox layoutX="220" prefWidth="780" prefHeight="600" styleClass="main-content">
+        <!-- Header Welcome -->
+        <VBox styleClass="header-welcome">
+            <Label text="Article Management" styleClass="header-title"/>
+            <Label text="Overview and Controls" styleClass="header-subtitle"/>
+        </VBox>
+
+        <!-- Quick Stats Cards -->
+        <HBox spacing="15" styleClass="stats-container">
+            <VBox styleClass="stats-card">
+                <Label text="Total Articles" styleClass="stats-label"/>
+                <Label text="156" styleClass="stats-value"/>
+                <Separator/>
+                <Label text="↑ 12% from last fetch" styleClass="stats-trend,positive"/>
+            </VBox>
+
+            <VBox styleClass="stats-card">
+                <Label text="Users" styleClass="stats-label"/>
+                <Label text="142" styleClass="stats-value"/>
+                <Separator/>
+                <Label text="91% completion" styleClass="stats-trend,positive"/>
+            </VBox>
+
+            <VBox styleClass="stats-card">
+                <Label text="Categories" styleClass="stats-label"/>
+                <Label text="5" styleClass="stats-value"/>
+                <Separator/>
+                <Label text="Active Categories" styleClass="stats-info"/>
+            </VBox>
+        </HBox>
+
+        <!-- Action Buttons -->
+        <HBox spacing="15" styleClass="action-buttons">
+            <Button text="Start Collection" styleClass="action-button,primary"/>
+            <Button text="Start Categorization" styleClass="action-button,secondary"/>
+        </HBox>
+
+        <!-- Progress Section -->
+        <VBox styleClass="progress-section">
+            <Label text="Collection Progress" styleClass="section-title"/>
+
+            <!-- Progress Log -->
+            <VBox styleClass="progress-log">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Circle radius="4" styleClass="status-circle,active"/>
+                    <Label text="Collecting articles..." styleClass="status-text"/>
+                </HBox>
+
+                <!-- Progress Bar -->
+                <ProgressBar progress="0.95" styleClass="custom-progress"/>
+                <Label text="95 articles collected out of target 100" styleClass="progress-text"/>
+                <Label text="Average collection rate: 12 articles/minute" styleClass="collection-rate"/>
+
+                <!-- Status Bar -->
+                <VBox styleClass="status-bar">
+                    <HBox spacing="8">
+                        <Label text="Current Status:" styleClass="status-label"/>
+                        <Label text="Collection in Progress (95 of 100 articles)" styleClass="status-value"/>
+                    </HBox>
+                    <Label text="Last Updated: 2 minutes ago" styleClass="status-time"/>
+                </VBox>
+            </VBox>
+        </VBox>
+    </VBox>
+</AnchorPane>
+
+

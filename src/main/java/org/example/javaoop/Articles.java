@@ -37,9 +37,7 @@ public class Articles {
         put("health", "Health");
         put("sports", "Sport");
         put("artificial-intelligence", "AI");
-        put("entertainment", "Entertainment");
         put("science", "Science");
-        put("general", "General");
     }};
 
     public void collectArticles() {

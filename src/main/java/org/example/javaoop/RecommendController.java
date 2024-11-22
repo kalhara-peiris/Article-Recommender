@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class RecommendController extends categoryController {
+public class RecommendController extends categoryController  {
     @FXML
     protected Button readMore1;
     @FXML
@@ -86,12 +86,12 @@ public class RecommendController extends categoryController {
 
 
     @Override
-    protected String getCategoryId() {
+    public String getCategoryId() {
         return null; // This controller handles multiple categories
     }
 
     @Override
-    protected String getCategoryCssFile() {
+    public String getCategoryCssFile() {
         return "articleStyle.css";
     }
 

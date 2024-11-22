@@ -66,10 +66,10 @@ public abstract class categoryController extends CatergorizedArticles{
     protected static final String DB_PASSWORD = "";
 
     // Abstract method that concrete classes must implement to specify their category
-    protected abstract String getCategoryId();
+    public abstract String getCategoryId();
 
     // Abstract method for category-specific CSS
-    protected abstract String getCategoryCssFile();
+    public abstract String getCategoryCssFile();
 
     public categoryController() {
         super(Runtime.getRuntime().availableProcessors() * 2);

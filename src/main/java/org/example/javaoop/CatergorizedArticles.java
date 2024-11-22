@@ -68,7 +68,6 @@ public class CatergorizedArticles extends Articles{
 
 
 
-
         Set<String> scienceSpaceKeywords = new HashSet<>(Arrays.asList(
                 "nasa", "space", "astronomy", "planet", "mars", "satellite", "rover", "mission",
                 "spacecraft", "launch", "orbit", "galaxy", "solar system", "cosmic", "astronomical",

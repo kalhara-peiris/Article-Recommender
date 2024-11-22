@@ -1,13 +1,13 @@
 package org.example.javaoop;
 
-public class healthController extends categoryController {
+public class healthController extends categoryController  {
     @Override
-    protected String getCategoryId() {
+    public String getCategoryId() {
         return "C02"; // Health category ID
     }
 
     @Override
-    protected String getCategoryCssFile() {
+    public String getCategoryCssFile() {
         return "technology.css"; // Using same CSS file as shown in original code
     }
 }
