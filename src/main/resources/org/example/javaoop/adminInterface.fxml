@@ -22,7 +22,7 @@
         <!-- Sidebar Menu -->
         <VBox styleClass="sidebar-menu" spacing="8">
             <Button text="Dashboard" styleClass="menu-item,active"/>
-            <Button text="View Articles" styleClass="menu-item"/>
+            <Button text="View Articles" onAction="#loadUser" styleClass="menu-item"/>
             <Button text="View Users" styleClass="menu-item"/>
             <Button text="Log out" styleClass="menu-item"/>
         </VBox>
@@ -58,7 +58,7 @@
 
             <VBox styleClass="stats-card">
                 <Label text="Users" styleClass="stats-label"/>
-                <Label fx:id="userCount" text="142" styleClass="stats-value"/>
+                <Label fx:id="userCount" styleClass="stats-value"/>
                 <Separator/>
                 <Label text="91% completion" styleClass="stats-trend,positive"/>
             </VBox>
@@ -74,7 +74,7 @@
         <!-- Action Buttons -->
         <HBox spacing="15" styleClass="action-buttons">
             <Button fx:id="startCollectionButton" onAction="#handleStartCollection" text="Start Collection" styleClass="action-button,primary"/>
-            <Button text="Start Categorization" styleClass="action-button,secondary"/>
+            <Button fx:id="startCategorizationButton" onAction="#handleStartCategorization" text="Start Categorization" styleClass="action-button,secondary"/>
         </HBox>
 
         <!-- Progress Section -->

@@ -1,0 +1,181 @@
+/* Main Styles */
+.root {
+    -fx-background-color: #f5f5f5;
+    -fx-font-family: "Arial";
+}
+
+/* Sidebar Styles */
+.sidebar {
+    -fx-background-color: #673ab7;
+    -fx-pref-width: 220;
+    -fx-padding: 20;
+    -fx-spacing: 20;
+}
+
+.sidebar-title {
+    -fx-text-fill: white;
+    -fx-font-size: 20;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 20 0;
+}
+
+.menu-items {
+    -fx-spacing: 10;
+}
+
+.menu-button {
+    -fx-background-color: #7e57c2;
+    -fx-text-fill: white;
+    -fx-pref-width: 200;
+    -fx-pref-height: 45;
+    -fx-background-radius: 8;
+    -fx-font-size: 14;
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 15;
+}
+
+.menu-button:hover {
+    -fx-background-color: #8e69c9;
+}
+
+.menu-button.active {
+    -fx-background-color: #8e69c9;
+}
+
+.admin-profile {
+    -fx-padding: 20;
+    -fx-alignment: bottom-left;
+}
+
+.profile-circle {
+    -fx-fill: white;
+}
+
+.admin-name {
+    -fx-text-fill: white;
+    -fx-font-size: 14;
+}
+
+.admin-role {
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 12;
+}
+
+/* Main Content Styles */
+.main-content {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-spacing: 20;
+}
+
+/* Stats Cards */
+.stats-container {
+    -fx-spacing: 20;
+}
+
+.stat-card {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-pref-width: 220;
+    -fx-pref-height: 100;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+    -fx-background-radius: 8;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8;
+}
+
+.stat-label {
+    -fx-text-fill: #666;
+    -fx-font-size: 14;
+}
+
+.stat-value {
+    -fx-text-fill: #673ab7;
+    -fx-font-size: 24;
+    -fx-padding: 10 0 0 0;
+}
+
+/* Article Section */
+.article-section {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-spacing: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+    -fx-background-radius: 8;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8;
+}
+
+.section-title {
+    -fx-font-size: 18;
+    -fx-text-fill: #333;
+}
+
+.search-field {
+    -fx-background-color: #f5f5f5;
+    -fx-pref-height: 40;
+    -fx-min-height: 40;
+    -fx-background-radius: 20;
+    -fx-padding: 0 15;
+    -fx-prompt-text-fill: #666;
+}
+
+.article-list {
+    -fx-spacing: 15;
+    -fx-background-color: #FFFFFF;
+    -fx-faint-focus-color: #FFFFFF;
+    -fx-border-color: #FFFFFF;
+    -fx-border-width: 0;
+}
+
+
+.article-item {
+    -fx-padding: 20;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.article-title {
+    -fx-font-size: 14;
+    -fx-text-fill: #333;
+}
+
+.delete-button {
+    -fx-background-color: #ff4444;
+    -fx-text-fill: white;
+    -fx-padding: 5px 10px;
+    -fx-pref-width: 60;
+    -fx-pref-height: 25;
+    -fx-background-radius: 12;
+    -fx-font-size: 12;
+}
+
+.delete-button:hover {
+    -fx-background-color: #ff6666;
+}
+
+/* Pagination */
+.pagination-container {
+    -fx-padding: 20 0;
+}
+
+.custom-pagination {
+    -fx-page-information-visible: false;
+}
+
+.custom-pagination .pagination-control {
+    -fx-spacing: 10;
+}
+
+.article-scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-min-height: 260;
+}
+
+.article-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}

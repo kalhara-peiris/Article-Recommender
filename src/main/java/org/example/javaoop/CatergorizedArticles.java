@@ -23,6 +23,16 @@ public class CatergorizedArticles extends Articles{
     private String content;
     private Map<String,Double> categoryScores = new HashMap<>();
 
+    private ProgressCallback progressCallback;
+    public interface ProgressCallback{
+        void onProgress(int processed,int total);
+    }
+
+    public void setCategoryProgressCallback(ProgressCallback callback) {
+        this.progressCallback = callback;
+    }
+
+
 
     private static final Map <String, Set<String>> KEYWORDS = new HashMap<>();
     private static final Map<String, Double> KEYWORD_WEIGHTS = new HashMap<>();
@@ -146,8 +156,27 @@ public class CatergorizedArticles extends Articles{
     }
     public void categorizeAndStoreArticles() {
         try (Connection conn = getConnection()) {
+            String countQuery = "SELECT COUNT(*) as total FROM Article a " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM ArticleCategory ac WHERE ac.ArticleID = a.ArticleID)";
+
+            int totalArticles = 0;
+            try (PreparedStatement countStmt = conn.prepareStatement(countQuery);
+                 ResultSet countRs = countStmt.executeQuery()) {
+                if (countRs.next()) {
+                    totalArticles = countRs.getInt("total");
+                }
+            }
+            final int finalTotalArticles=totalArticles;
+
+            if (finalTotalArticles == 0) {
+                System.out.println("No uncategorized articles found.");
+                return;
+            }
+
+            String selectQuery = "SELECT a.ArticleID, a.title, a.url FROM articletest a " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM articlecategorytest ac WHERE ac.ArticleID = a.ArticleID)";
             // Get all articles from Article table
-            String selectQuery = "SELECT ArticleID, title, url FROM Article";
+
             PreparedStatement pstmt = conn.prepareStatement(selectQuery);
             ResultSet rs = pstmt.executeQuery();
 
@@ -168,6 +197,13 @@ public class CatergorizedArticles extends Articles{
                         Connection pooledConn = connectionPool.take();
                         try {
                             processArticle(pooledConn, articleId, title, url);
+                            int processed = processedArticles.incrementAndGet();
+                            if(progressCallback!=null){
+                                progressCallback.onProgress(processed,finalTotalArticles);
+                            }
+                            if(processed%10==0 || processed==finalTotalArticles){
+                                System.out.println("Processed "+processed+" out of " + finalTotalArticles + " articles");
+                            }
                         } finally {
                             connectionPool.put(pooledConn);
                         }
@@ -208,7 +244,7 @@ public class CatergorizedArticles extends Articles{
                 storeCategorizationResult(conn, articleId, title, url, categoryId);
 
                 // Update progress
-                int processed = processedArticles.incrementAndGet();
+                int processed = processedArticles.get();
                 if (processed % 10 == 0) {  // Log every 10 articles
                     System.out.println("Processed " + processed + " articles");
                 }
@@ -288,7 +324,7 @@ public class CatergorizedArticles extends Articles{
 
     private void storeCategorizationResult(Connection conn, String articleId, String title,
                                            String url, String categoryId) {
-        String insertQuery = "INSERT IGNORE INTO ArticleCategory " +
+        String insertQuery = "INSERT IGNORE INTO ArticleCategorytest " +
                 "(ArticleID, title, url, categoryID) VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {

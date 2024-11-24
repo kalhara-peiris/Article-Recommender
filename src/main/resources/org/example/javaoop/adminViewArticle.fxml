@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.javaoop.adminArticleController"
+            stylesheets="@adminArticleView.css">
+
+<!-- Left Sidebar -->
+<left>
+    <VBox styleClass="sidebar">
+        <Label text="Admin Dashboard" styleClass="sidebar-title"/>
+
+        <VBox spacing="10" styleClass="menu-items">
+            <Button fx:id="dashBoardBtn" text="Dashboard"  styleClass="menu-button"/>
+            <Button fx:id="articlesBtn" text="View Articles" styleClass="menu-button" id="activeButton"/>
+            <Button fx:id="usersBtn" text="View Users" styleClass="menu-button"/>
+            <Button fx:id="logoutBtn" text="Log out" styleClass="menu-button"/>
+        </VBox>
+
+        <!-- Admin Profile -->
+        <VBox styleClass="admin-profile" VBox.vgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Circle radius="20" styleClass="profile-circle"/>
+                <VBox>
+                    <Label fx:id="adminNameLabel" text="Admin User" styleClass="admin-name"/>
+                    <Label fx:id="adminRoleLabel" text="Administrator" styleClass="admin-role"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </VBox>
+</left>
+
+<!-- Main Content -->
+<center>
+    <VBox spacing="20" styleClass="main-content">
+        <!-- Stats Cards -->
+        <HBox spacing="20">
+            <VBox styleClass="stat-card">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+                <Label text="Total Articles" styleClass="stat-label"/>
+                <Label fx:id="totalArticles" text="156" styleClass="stat-value"/>
+            </VBox>
+
+            <VBox styleClass="stat-card">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+                <Label text="Published" styleClass="stat-label"/>
+                <Label fx:id="publishedArticles" text="142" styleClass="stat-value"/>
+            </VBox>
+
+            <VBox styleClass="stat-card">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+                <Label text="Pending Review" styleClass="stat-label"/>
+                <Label fx:id="pendingArticles" text="14" styleClass="stat-value"/>
+            </VBox>
+        </HBox>
+
+        <!-- Article List Section -->
+        <VBox styleClass="article-section" VBox.vgrow="ALWAYS" spacing="15">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <Label text="Article List" styleClass="section-title"/>
+
+            <TextField fx:id="searchField" promptText="Search articles..." styleClass="search-field"/>
+
+            <ScrollPane fitToWidth="true" styleClass="article-scroll-pane" VBox.vgrow="ALWAYS">
+                <VBox fx:id="articleList" spacing="10" styleClass="article-list">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+
+                    <VBox styleClass="article-item">
+                        <padding>
+                            <Insets top="15" right="15" bottom="15" left="15"/>
+                        </padding>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="College Basketball Rankings: Kansas sits at No. 1" styleClass="article-title"/>
+                            </VBox>
+                            <Button text="Delete" styleClass="delete-button"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox styleClass="article-item">
+                        <padding>
+                            <Insets top="15" right="15" bottom="15" left="15"/>
+                        </padding>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Raiders, at league-worst 2-7, fire OC" styleClass="article-title"/>
+                            </VBox>
+                            <Button text="Delete" styleClass="delete-button"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox styleClass="article-item">
+                        <padding>
+                            <Insets top="15" right="15" bottom="15" left="15"/>
+                        </padding>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label text="Thysiastery is an anime Legend Of Grimrock" styleClass="article-title"/>
+                            </VBox>
+                            <Button text="Delete" styleClass="delete-button"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+
+            <!-- Pagination -->
+            <HBox alignment="CENTER">
+                <Pagination fx:id="articlePagination" pageCount="10" maxPageIndicatorCount="5" styleClass="custom-pagination"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</center>
+
+</BorderPane>
