@@ -10,13 +10,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
-
 import javafx.event.ActionEvent;
+
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,52 +20,57 @@ import java.time.format.DateTimeFormatter;
 public class adminController {
     @FXML
     private Button startCollectionButton;
-
     @FXML
     private Button startCategorizationButton;
-
-    private CatergorizedArticles categorizer;
-    private boolean isCategorizationRunning = false;
-
     @FXML
     private ProgressBar progressBar;
-
     @FXML
     private Label statusText;
-
     @FXML
     private Label userCount;
-
     @FXML
     private Label progressText;
-
     @FXML
     private Label collectionRateLabel;
-
     @FXML
     private Label articleCountLabel;
-
     @FXML
     private Label currentStatusLabel;
-
     @FXML
     private Label lastUpdatedLabel;
 
-    private Articles articleCollectors;
-    private int totalTargetArticles = 50;
+    private Admin admin;
+    private boolean isCategorizationRunning = false;
 
     @FXML
     public void initialize() {
+        admin = new Admin();
         updateArticleCount();
         updateUserCount();
-        articleCollectors = new Articles();
-        articleCollectors = new Articles();
-        categorizer = new CatergorizedArticles(Runtime.getRuntime().availableProcessors() * 2);
-        // Initialize article count on startup
-        updateArticleCount();
     }
 
-    public void loadUser(ActionEvent event) throws IOException {
+    private void updateArticleCount() {
+        try {
+            int totalArticles = admin.getTotalArticleCount();
+            articleCountLabel.setText(String.valueOf(totalArticles));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            articleCountLabel.setText("Error");
+        }
+    }
+
+    private void updateUserCount() {
+        try {
+            int totalUsers = admin.getTotalUserCount();
+            userCount.setText(String.valueOf(totalUsers));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            userCount.setText("Error");
+        }
+    }
+
+    @FXML
+    public void loadArticle(ActionEvent event) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("adminViewArticle.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
         scene.getStylesheets().add(getClass().getResource("adminArticleView.css").toExternalForm());
@@ -79,63 +80,44 @@ public class adminController {
         stage.show();
     }
 
-    private void updateArticleCount() {
-        try (Connection conn = DriverManager.getConnection(Articles.dbUrl, Articles.dbUser, Articles.dbPassword)) {
-            String countQuery = "SELECT COUNT(*) AS total FROM Article";
-            try (PreparedStatement pstmt = conn.prepareStatement(countQuery);
-                 ResultSet rs = pstmt.executeQuery()) {
-
-                if (rs.next()) {
-                    int totalArticles = rs.getInt("total");
-                    articleCountLabel.setText(String.valueOf(totalArticles));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            articleCountLabel.setText("Error");
-        }
+    @FXML
+    public void loadUser(ActionEvent event) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("adminUserView.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
+        scene.getStylesheets().add(getClass().getResource("adminUserView.css").toExternalForm());
+        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
+        stage.setTitle("Hello!");
+        stage.setScene(scene);
+        stage.show();
     }
-    private void updateUserCount() {
-        try (Connection conn = DriverManager.getConnection(Articles.dbUrl, Articles.dbUser, Articles.dbPassword)) {
-            String countQuery = "SELECT COUNT(*) AS total FROM user";
-            try (PreparedStatement pstmt = conn.prepareStatement(countQuery);
-                 ResultSet rs = pstmt.executeQuery()) {
 
-                if (rs.next()) {
-                    int totalUser = rs.getInt("total");
-                    userCount.setText(String.valueOf(totalUser));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            articleCountLabel.setText("Error");
-        }
+    @FXML
+    public void logOut(ActionEvent event) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("signUp.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
+        scene.getStylesheets().add(getClass().getResource("signUp.css").toExternalForm());
+        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
+        stage.setTitle("Hello!");
+        stage.setScene(scene);
+        stage.show();
     }
 
     @FXML
     private void handleStartCollection() {
-        // Disable the button during collection
         startCollectionButton.setDisable(true);
+        initializeCollectionUI();
 
-        // Reset progress indicators
-        progressBar.setProgress(0);
-        statusText.setText("Collecting articles...");
-        currentStatusLabel.setText("Collection in Progress");
-        progressText.setText("0 articles collected out of target " + totalTargetArticles);
-        collectionRateLabel.setText("Average collection rate: 0 articles/minute");
-
-        // Create a background task for article collection
         Task<Void> collectionTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                long startTime = System.currentTimeMillis();
-
-                // Custom implementation to track progress
-                articleCollectors.collectArticles(progress -> updateCollectionProgress(progress));
-
+                admin.collectArticles(new Admin.CollectionProgressCallback() {
+                    @Override
+                    public void onProgress(double progress) {
+                        Platform.runLater(() -> updateCollectionProgress(progress));
+                    }
+                });
                 return null;
             }
-
 
             @Override
             protected void succeeded() {
@@ -155,92 +137,39 @@ public class adminController {
             }
         };
 
-        // Run the task in a background thread
         new Thread(collectionTask).start();
     }
-    private void updateCollectionProgress(double progress) {
-        Platform.runLater(() -> {
-            // Update progress bar
-            progressBar.setProgress(progress);
 
-            // Update progress text
-            int collectedArticles = (int) (progress * totalTargetArticles);
-            progressText.setText(String.format("%d articles collected out of target %d",
-                    collectedArticles, totalTargetArticles));
-
-            // Update status text
-            statusText.setText("Collecting articles...");
-            currentStatusLabel.setText(String.format("Collection in Progress (%d of %d articles)",
-                    collectedArticles, totalTargetArticles));
-
-            // Update collection rate (simple estimation)
-            collectionRateLabel.setText(String.format("Average collection rate: %d articles/minute",
-                    Math.max(1, (int)(collectedArticles * 2))));
-        });
-    }
-
-
-    private void updateUIAfterCollection() {
-        // Update article count from database
-        updateArticleCount();
-
-        // Update last updated time
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        lastUpdatedLabel.setText("Last Updated: " + now.format(formatter));
-
-        // Update status
-        statusText.setText("Collection Complete");
-        currentStatusLabel.setText("Finished collecting articles");
-        progressBar.setProgress(1.0);
-        progressText.setText(String.format("%d articles collected", totalTargetArticles));
-    }
     @FXML
     private void handleStartCategorization() {
-        if (isCategorizationRunning) {
-            return;
-        }
+        if (isCategorizationRunning) return;
 
-        // Disable both buttons during categorization
         startCategorizationButton.setDisable(true);
         startCollectionButton.setDisable(true);
         isCategorizationRunning = true;
-
-        // Reset progress indicators
-        progressBar.setProgress(0);
-        statusText.setText("Categorizing articles...");
-        currentStatusLabel.setText("Categorization in Progress");
-        progressText.setText("Preparing for categorization...");
-        collectionRateLabel.setText("Processing articles...");
+        initializeCategorizationUI();
 
         Task<Void> categorizationTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                // Get count of uncategorized articles
-                int totalUncategorized = getUncategorizedArticleCount();
-
-                if (totalUncategorized == 0) {
-                    Platform.runLater(() -> {
-                        statusText.setText("No articles to categorize");
-                        currentStatusLabel.setText("All articles are already categorized");
-                        progressBar.setProgress(1.0);
-                    });
-                    return null;
-                }
-                final int targetArticles = Math.min(50, totalUncategorized);
-                final int[] processedCount = {0};
-                categorizer.setCategoryProgressCallback((processed, total) -> {
-                    processedCount[0] = processed;
-                    double progress = (double) processed / totalUncategorized;
-                    Platform.runLater(() -> {
-                        progressBar.setProgress(progress);
-                        progressText.setText(String.format("%d articles categorized out of %d", processed, totalUncategorized));
-                        collectionRateLabel.setText(String.format("Processing articles... %d%%", (int)(progress * 100)));
-                    });
-                });
-
-                // Start categorization
-                categorizer.processCategorization();
+                admin.categorizeArticles(
+                        totalUncategorized -> {
+                            if (totalUncategorized == 0) {
+                                Platform.runLater(() -> {
+                                    statusText.setText("No articles to categorize");
+                                    currentStatusLabel.setText("All articles are already categorized");
+                                    progressBar.setProgress(1.0);
+                                });
+                            }
+                        },
+                        new Admin.CategorizationProgressCallback() {
+                            @Override
+                            public void onProgress(int processed, int total) {
+                                double progress = (double) processed / total;
+                                Platform.runLater(() -> updateCategorizationProgress(processed, total, progress));
+                            }
+                        }
+                );
                 return null;
             }
 
@@ -269,34 +198,58 @@ public class adminController {
         new Thread(categorizationTask).start();
     }
 
-    private int getUncategorizedArticleCount() {
-        try (Connection conn = DriverManager.getConnection(Articles.dbUrl, Articles.dbUser, Articles.dbPassword)) {
-            String countQuery = "SELECT COUNT(*) AS total FROM Articletest a " +
-                    "WHERE NOT EXISTS (SELECT 1 FROM ArticleCategorytest ac WHERE ac.ArticleID = a.ArticleID)";
-            try (PreparedStatement pstmt = conn.prepareStatement(countQuery);
-                 ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("total");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
+    private void initializeCollectionUI() {
+        progressBar.setProgress(0);
+        statusText.setText("Collecting articles...");
+        currentStatusLabel.setText("Collection in Progress");
+        progressText.setText("0 articles collected out of target " + admin.getTotalTargetArticles());
+        collectionRateLabel.setText("Average collection rate: 0 articles/minute");
     }
-    private void updateUIAfterCategorization() {
-        // Update last updated time
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        lastUpdatedLabel.setText("Last Updated: " + now.format(formatter));
 
-        // Update status
+    private void initializeCategorizationUI() {
+        progressBar.setProgress(0);
+        statusText.setText("Categorizing articles...");
+        currentStatusLabel.setText("Categorization in Progress");
+        progressText.setText("Preparing for categorization...");
+        collectionRateLabel.setText("Processing articles...");
+    }
+
+    private void updateCollectionProgress(double progress) {
+        progressBar.setProgress(progress);
+        int collectedArticles = (int) (progress * admin.getTotalTargetArticles());
+        progressText.setText(String.format("%d articles collected out of target %d",
+                collectedArticles, admin.getTotalTargetArticles()));
+        statusText.setText("Collecting articles...");
+        currentStatusLabel.setText(String.format("Collection in Progress (%d of %d articles)",
+                collectedArticles, admin.getTotalTargetArticles()));
+        collectionRateLabel.setText(String.format("Average collection rate: %d articles/minute",
+                Math.max(1, (int)(collectedArticles * 2))));
+    }
+
+    private void updateCategorizationProgress(int processed, int total, double progress) {
+        progressBar.setProgress(progress);
+        progressText.setText(String.format("%d articles categorized out of %d", processed, total));
+        collectionRateLabel.setText(String.format("Processing articles... %d%%", (int)(progress * 100)));
+    }
+
+    private void updateUIAfterCollection() {
+        updateArticleCount();
+        LocalDateTime now = LocalDateTime.now();
+        lastUpdatedLabel.setText("Last Updated: " +
+                now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        statusText.setText("Collection Complete");
+        currentStatusLabel.setText("Finished collecting articles");
+        progressBar.setProgress(1.0);
+        progressText.setText(String.format("%d articles collected", admin.getTotalTargetArticles()));
+    }
+
+    private void updateUIAfterCategorization() {
+        LocalDateTime now = LocalDateTime.now();
+        lastUpdatedLabel.setText("Last Updated: " +
+                now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         statusText.setText("Categorization Complete");
         currentStatusLabel.setText("Finished categorizing articles");
         progressBar.setProgress(1.0);
-
-        // Update article count
         updateArticleCount();
     }
-
 }

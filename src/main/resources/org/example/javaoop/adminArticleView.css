@@ -24,11 +24,11 @@
 }
 
 .menu-button {
-    -fx-background-color: #7e57c2;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
     -fx-text-fill: white;
     -fx-pref-width: 200;
     -fx-pref-height: 45;
-    -fx-background-radius: 8;
+    -fx-background-radius: 20;
     -fx-font-size: 14;
     -fx-alignment: center-left;
     -fx-padding: 0 0 0 15;

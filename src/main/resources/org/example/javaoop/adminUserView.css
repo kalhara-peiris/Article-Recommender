@@ -1,0 +1,191 @@
+.root {
+    -fx-background-color: #f5f5f5;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    -fx-background-color: #673ab7;
+    -fx-min-width: 250px;
+    -fx-pref-width: 250px;
+    -fx-padding: 20;
+    -fx-spacing: 20;
+}
+
+.sidebar-title {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 20 0;
+}
+
+.menu {
+    -fx-spacing: 10;
+}
+
+.menu-button {
+    -fx-background-color:rgba(255, 255, 255, 0.1) ;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-min-width: 200;
+    -fx-pref-width: 200;
+    -fx-padding: 10 20;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+
+.menu-button:hover {
+    -fx-background-color: #7e57c2;
+}
+
+.active-menu-button {
+    -fx-background-color: #7e57c2;
+}
+
+/* Admin Profile Styles */
+.admin-profile {
+    -fx-padding: 20;
+    -fx-alignment: bottom-left;
+}
+
+.profile-circle {
+    -fx-fill: #7e57c2;
+}
+
+.admin-name {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.admin-role {
+    -fx-text-fill: #ede7f6;
+    -fx-font-size: 12px;
+}
+
+/* Main Content Styles */
+.main-content {
+    -fx-padding: 30;
+    -fx-spacing: 30;
+}
+
+/* Stats Card Styles */
+.stats-container {
+    -fx-spacing: 20;
+}
+
+.stat-card {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-min-width: 200;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+    -fx-background-radius: 5;
+}
+
+.stat-label {
+    -fx-text-fill: #666666;
+    -fx-font-size: 14px;
+}
+
+.stat-value {
+    -fx-text-fill: #673ab7;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+/* Users Section Styles */
+.users-section {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-spacing: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+    -fx-background-radius: 5;
+}
+
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.search-field {
+    -fx-pref-width: 300;
+    -fx-background-color: #f5f5f5;
+    -fx-padding: 8;
+    -fx-background-radius: 20;
+}
+
+.users-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-fit-to-width: true;
+}
+
+.users-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.user-list {
+    -fx-padding: 10;
+    -fx-spacing: 10;
+}
+
+/* User Item Styles */
+.user-item {
+    -fx-background-color: white;
+    -fx-padding: 15;
+    -fx-spacing: 10;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 5;
+}
+
+.user-info {
+    -fx-spacing: 5;
+}
+
+.username-label {
+    -fx-font-weight: bold;
+}
+
+.password-label {
+    -fx-text-fill: #666666;
+}
+
+.delete-button {
+    -fx-background-color: #ff4444;
+    -fx-text-fill: white;
+    -fx-padding: 5 15;
+    -fx-cursor: hand;
+    -fx-background-radius: 3;
+}
+
+.delete-button:hover {
+    -fx-background-color: #ff6666;
+}
+
+/* Pagination Styles */
+.pagination-container {
+    -fx-padding: 20 0 0 0;
+}
+
+.custom-pagination {
+    -fx-page-information-visible: false;
+}
+
+.custom-pagination .pagination-control .button {
+    -fx-background-color: transparent;
+    -fx-border-color: #673ab7;
+    -fx-text-fill: #673ab7;
+}
+
+.custom-pagination .pagination-control .button:hover {
+    -fx-background-color: #673ab7;
+    -fx-text-fill: white;
+}
+
+.custom-pagination .pagination-control .page-number {
+    -fx-background-color: transparent;
+    -fx-text-fill: #673ab7;
+}
+
+.custom-pagination .pagination-control .page-number:selected {
+    -fx-background-color: #673ab7;
+    -fx-text-fill: white;
+}

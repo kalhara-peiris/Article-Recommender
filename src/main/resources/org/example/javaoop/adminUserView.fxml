@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.javaoop.adminUserController"
+            stylesheets="@adminUserView.css">
+
+<!-- Left Sidebar -->
+<left>
+    <VBox styleClass="sidebar">
+        <Label text="Admin Dashboard" styleClass="sidebar-title"/>
+
+        <!-- Menu Items -->
+        <VBox styleClass="menu">
+            <Button fx:id="dashboardBtn"  text="Dashboard" styleClass="menu-button"/>
+            <Button fx:id="articlesBtn"  text="View Articles" styleClass="menu-button"/>
+            <Button fx:id="usersBtn" text="View Users" styleClass="menu-button, active-menu-button"/>
+            <Button fx:id="logoutBtn" text="Log out" styleClass="menu-button"/>
+        </VBox>
+
+        <!-- Admin Profile -->
+        <VBox styleClass="admin-profile">
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Circle radius="20" styleClass="profile-circle"/>
+                <VBox>
+                    <Label fx:id="adminNameLabel" text="Admin User" styleClass="admin-name"/>
+                    <Label fx:id="adminRoleLabel" text="Administrator" styleClass="admin-role"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </VBox>
+</left>
+
+<!-- Main Content -->
+<center>
+    <VBox styleClass="main-content">
+        <!-- Stats Cards -->
+        <HBox spacing="20" styleClass="stats-container">
+            <VBox styleClass="stat-card">
+                <Label text="Total Users" styleClass="stat-label"/>
+                <Label fx:id="totalUsers" text="50" styleClass="stat-value"/>
+            </VBox>
+        </HBox>
+
+        <!-- User List Section -->
+        <VBox styleClass="users-section">
+            <HBox alignment="CENTER_LEFT" spacing="20">
+                <Label text="User List" styleClass="section-title"/>
+                <TextField fx:id="searchField" promptText="Search users..." styleClass="search-field"/>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" styleClass="users-scroll-pane">
+                <VBox fx:id="userList" spacing="10" styleClass="user-list">
+                    <!-- User items will be added here dynamically -->
+                </VBox>
+            </ScrollPane>
+
+            <!-- Pagination -->
+            <HBox alignment="CENTER" styleClass="pagination-container">
+                <Pagination fx:id="userPagination" pageCount="5" maxPageIndicatorCount="5" styleClass="custom-pagination"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</center>
+
+</BorderPane>

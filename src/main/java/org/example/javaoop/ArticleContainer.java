@@ -1,4 +1,3 @@
-
 package org.example.javaoop;
 
 import javafx.application.Platform;
@@ -23,32 +22,25 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.*;
 
-public class ArticleContainer  {
+public class ArticleContainer {
     @FXML
     private Label articleTitle;
-
     @FXML
     private Label categoryLabel;
-
     @FXML
     private Label scoreLabel;
-
     @FXML
     private Label dateLabel;
-
     @FXML
     private Label contentArea;
-
     @FXML
     private Button likeButton;
-
     @FXML
     private Button dislikeButton;
-
     @FXML
     private Button saveButton;
-
     @FXML
     private Button backButton;
 
@@ -56,62 +48,149 @@ public class ArticleContainer  {
     private String articleUrl;
     private String currentUsername;
     private Stage primaryStage;
+    private User currentUser;
 
     private static final String DB_URL = "jdbc:mysql://localhost:3306/javacw";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
 
-    @FXML
-    public void initialize() {
-        Platform.runLater(() -> {
-            if (currentUsername == null) {
-                try {
-                    Stage stage = (Stage) likeButton.getScene().getWindow();
-                    if (stage != null && stage.getUserData() instanceof HelloApplication) {
-                        HelloApplication app = (HelloApplication) stage.getUserData();
-                        currentUsername = app.getCurrentUsername();
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error in initialize: " + e.getMessage());
-                }
-            }
-            setupButtonHandlers();
-        });
+    // Thread pool for handling concurrent operations
+    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+    // Queue for handling database operations
+    private final BlockingQueue<Runnable> dbOperationQueue = new LinkedBlockingQueue<>();
+
+    // Thread for processing database operations
+    private final Thread dbOperationProcessor;
+
+    public ArticleContainer() {
+        dbOperationProcessor = new Thread(this::processDbOperationQueue);
+        dbOperationProcessor.setDaemon(true);
+        dbOperationProcessor.start();
     }
 
+    private void processDbOperationQueue() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                Runnable operation = dbOperationQueue.take();
+                operation.run();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
 
-
-    public void setArticleData(String articleId, String title, String url, String category, String username) {
-        setCurrentUsername(username);
-        if (username == null || username.trim().isEmpty()) {
+    @FXML
+    public void initialize() {
+        CompletableFuture.runAsync(() -> {
+            Platform.runLater(() -> {
+                if (currentUsername == null) {
+                    try {
+                        Stage stage = (Stage) likeButton.getScene().getWindow();
+                        if (stage != null && stage.getUserData() instanceof HelloApplication) {
+                            HelloApplication app = (HelloApplication) stage.getUserData();
+                            currentUsername = app.getCurrentUsername();
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error in initialize: " + e.getMessage());
+                    }
+                }
+                setupButtonHandlers();
+            });
+        }, executorService);
+    }
+    private void handleLike() {
+        if (currentUsername == null || currentUsername.trim().isEmpty()) {
             showError("Error", "No user is currently logged in. Please log in again.");
             return;
         }
-        this.articleId = articleId;
-        this.articleUrl = url;
 
+        CompletableFuture.runAsync(() -> {
+            try {
+                currentUser.recordLikeInteraction(articleId);
+                Platform.runLater(() -> {
+                    likeButton.setDisable(true);
+                    dislikeButton.setDisable(true);
+                    showSuccess("Thank you for your feedback!");
+                });
+            } catch (SQLException e) {
+                Platform.runLater(() ->
+                        showError("Database Error", "Could not record like: " + e.getMessage())
+                );
+            }
+        }, executorService);
+    }
 
-        articleTitle.setText(title);
-        categoryLabel.setText("Category: " + category);
+    private void handleDislike() {
+        CompletableFuture.runAsync(() -> {
+            try {
+                currentUser.recordDislikeInteraction(articleId);
+                Platform.runLater(() -> {
+                    likeButton.setDisable(true);
+                    dislikeButton.setDisable(true);
+                    showSuccess("Thank you for your feedback!");
+                });
+            } catch (SQLException e) {
+                Platform.runLater(() ->
+                        showError("Database Error", "Could not record dislike: " + e.getMessage())
+                );
+            }
+        }, executorService);
+    }
 
-        // Set current date
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-        dateLabel.setText("Published: " + now.format(formatter));
+    private void handleSave() {
+        CompletableFuture.runAsync(() -> {
+            try {
+                currentUser.recordSaveInteraction(articleId);
+                Platform.runLater(() -> {
+                    saveButton.setDisable(true);
+                    showSuccess("Article saved successfully!");
+                });
+            } catch (SQLException e) {
+                Platform.runLater(() ->
+                        showError("Database Error", "Could not save article: " + e.getMessage())
+                );
+            }
+        }, executorService);
+    }
 
-        // Load article content
-        loadArticleContent();
+    public void setCurrentUsername(String username) {
+        this.currentUsername = username;
+        this.currentUser = new User(username);
+    }
+
+    public void setArticleData(String articleId, String title, String url, String category, String username) {
+        CompletableFuture.runAsync(() -> {
+            setCurrentUsername(username);
+            if (username == null || username.trim().isEmpty()) {
+                Platform.runLater(() -> showError("Error", "No user is currently logged in. Please log in again."));
+                return;
+            }
+            this.articleId = articleId;
+            this.articleUrl = url;
+
+            Platform.runLater(() -> {
+                articleTitle.setText(title);
+                categoryLabel.setText("Category: " + category);
+
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+                dateLabel.setText("Published: " + now.format(formatter));
+            });
+
+            loadArticleContent();
+        }, executorService);
     }
 
     private void setupButtonHandlers() {
-
         likeButton.setOnAction(event -> handleLike());
         dislikeButton.setOnAction(event -> handleDislike());
         saveButton.setOnAction(event -> handleSave());
     }
 
     private void loadArticleContent() {
-        new Thread(() -> {
+        CompletableFuture.runAsync(() -> {
             try {
                 Document doc = Jsoup.connect(articleUrl)
                         .userAgent("Mozilla/5.0")
@@ -119,42 +198,11 @@ public class ArticleContainer  {
                         .get();
 
                 String content = doc.select("article, .article-content, .story-content, .main-content, .post-content").text();
-
-                // Update UI on JavaFX Application Thread
-                Platform.runLater(() -> {
-                    contentArea.setText(content);
-                });
-
+                Platform.runLater(() -> contentArea.setText(content));
             } catch (IOException e) {
-                showError("Error", "Could notss load article content: " + e.getMessage());
+                Platform.runLater(() -> showError("Error", "Could not load article content: " + e.getMessage()));
             }
-        }).start();
-    }
-
-    private void handleLike() {
-        if (currentUsername == null || currentUsername.trim().isEmpty()) {
-            showError("Error", "No user is currently logged in. Please log in again.");
-            return;
-        }
-        recordInteraction("LIKE");
-        updateUserPreference(5); // Increase preference score by 5
-        likeButton.setDisable(true);
-        dislikeButton.setDisable(true);
-        showSuccess("Thank you for your feedback!");
-    }
-
-    private void handleDislike() {
-        recordInteraction("DISLIKE");
-        updateUserPreference(-3); // Decrease preference score by 3
-        likeButton.setDisable(true);
-        dislikeButton.setDisable(true);
-        showSuccess("Thank you for your feedback!");
-    }
-
-    private void handleSave() {
-        recordInteraction("SAVE");
-        saveButton.setDisable(true);
-        showSuccess("Article saved successfully!");
+        }, executorService);
     }
 
     public void recommended(ActionEvent event) throws IOException {
@@ -165,68 +213,6 @@ public class ArticleContainer  {
         scene.getStylesheets().add(getClass().getResource("articleStyle.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
-    }
-
-    private void recordInteraction(String interactionType) {
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String interactionId = UUID.randomUUID().toString();
-            String query = "INSERT INTO userinteraction (interactionID, username, ArticleID, interactionType) " +
-                    "VALUES (?, ?, ?, ?)";
-
-            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                pstmt.setString(1, interactionId);
-                pstmt.setString(2, currentUsername);
-                pstmt.setString(3, articleId);
-                pstmt.setString(4, interactionType);
-                pstmt.executeUpdate();
-            }
-        } catch (SQLException e) {
-            showError("Database Error", "Could not record interaction: " + e.getMessage());
-        }
-    }
-
-    private void updateUserPreference(int scoreChange) {
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            // Get the category ID for this article
-            String categoryId = getCategoryId();
-            if (categoryId != null) {
-                String query = "INSERT INTO userpreference (username, categoryID, preferenceScore) " +
-                        "VALUES (?, ?, ?) " +
-                        "ON DUPLICATE KEY UPDATE preferenceScore = preferenceScore + ?";
-
-                try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                    pstmt.setString(1, currentUsername);
-                    pstmt.setString(2, categoryId);
-                    pstmt.setInt(3, scoreChange);
-                    pstmt.setInt(4, scoreChange);
-                    pstmt.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            showError("Database Error", "Could not update preference: " + e.getMessage());
-        }
-    }
-
-    private String getCategoryId() {
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String query = "SELECT categoryID FROM ArticleCategory WHERE ArticleID = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                pstmt.setString(1, articleId);
-                var rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    return rs.getString("categoryID");
-                }
-            }
-        } catch (SQLException e) {
-            showError("Database Error", "Could not get category ID: " + e.getMessage());
-        }
-        return null;
-    }
-
-
-
-    public void setCurrentUsername(String username) {
-        this.currentUsername = username;
     }
 
     public void setPrimaryStage(Stage stage) {
@@ -251,5 +237,19 @@ public class ArticleContainer  {
             alert.setContentText(message);
             alert.showAndWait();
         });
+    }
+
+    // Cleanup method to properly shutdown threads when the controller is no longer needed
+    public void cleanup() {
+        executorService.shutdown();
+        dbOperationProcessor.interrupt();
+        try {
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

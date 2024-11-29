@@ -1,134 +1,103 @@
 package org.example.javaoop;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class HelloApplication extends Application {
-    private String currentUsername;
+    // Using AtomicReference for thread-safe username access
+    private final AtomicReference<String> currentUsername = new AtomicReference<>();
 
-    // Add setter and getter for username
     public void setCurrentUsername(String username) {
-        this.currentUsername = username;
+        currentUsername.set(username);
     }
 
     public String getCurrentUsername() {
-        return currentUsername;
+        return currentUsername.get();
     }
 
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("signUp.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
-        scene.getStylesheets().add(getClass().getResource("signUp.css").toExternalForm());
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("signUp.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
+            scene.getStylesheets().add(getClass().getResource("signUp.css").toExternalForm());
 
+            // Set the HelloApplication instance in the stage's user data
+            stage.setUserData(this);
+            stage.setTitle("Hello!");
+            stage.setScene(scene);
+            stage.show();
 
-        stage.setTitle("Hello!");
-        stage.setScene(scene);
-        stage.show();
+            // Add stage close handler for cleanup
+            stage.setOnCloseRequest(event -> {
+                cleanup();
+                Platform.exit();
+            });
+        } catch (IOException e) {
+            System.err.println("Failed to start application: " + e.getMessage());
+            throw e;
+        }
     }
+
+    @Override
+    public void stop() {
+        cleanup();
+    }
+
+    private void cleanup() {
+        // This will be called when the application is shutting down
+        // Clean up any resources, shut down thread pools, etc.
+        try {
+            // Get all open windows/stages
+            Platform.runLater(() -> {
+                for (javafx.stage.Window window : javafx.stage.Window.getWindows()) {
+                    if (window instanceof Stage) {
+                        // Get the controller and call cleanup if it exists
+                        Scene scene = ((Stage) window).getScene();
+                        if (scene != null && scene.getRoot() != null) {
+                            Object controller = scene.getUserData();
+                            if (controller instanceof AutoCloseable) {
+                                try {
+                                    ((AutoCloseable) controller).close();
+                                } catch (Exception e) {
+                                    System.err.println("Error during cleanup: " + e.getMessage());
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("Error during application cleanup: " + e.getMessage());
+        }
+    }
+
+    // Helper method for navigation that ensures thread safety
     public void recommended(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("recommend.fxml"));
-        Parent root = fxmlLoader.load();
-        RecommendController controller = fxmlLoader.getController();
-        if (controller != null) {
-            controller.setCurrentUsername(currentUsername);
-        }
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("recommend.fxml"));
+                Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
+                scene.getStylesheets().add(getClass().getResource("articleStyle.css").toExternalForm());
 
-        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        stage.setUserData(this);
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("articleStyle.css").toExternalForm());
-        stage.setScene(scene);
-        stage.show();
-    }
-    public void technology(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("technology.fxml"));
-        Parent root = fxmlLoader.load();
-        Object controller = fxmlLoader.getController();
-        if (controller instanceof categoryController) {
-            ((categoryController) controller).setCurrentUsername(currentUsername);
-        }
-        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("technology.css").toExternalForm());
-        stage.setScene(scene);
-        stage.show();
-    }
-    public void health(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("health.fxml"));
-        Parent root = fxmlLoader.load();
-        Object controller = fxmlLoader.getController();
-        if (controller instanceof categoryController) {
-            ((categoryController) controller).setCurrentUsername(currentUsername);
-        }
-        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("technology.css").toExternalForm());
-        stage.setScene(scene);
-        stage.show();
-    }
-    public void sport(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("sport.fxml"));
-        Parent root = fxmlLoader.load();
-        Object controller = fxmlLoader.getController();
-        if (controller instanceof categoryController) {
-            ((categoryController) controller).setCurrentUsername(currentUsername);
-        }
-        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("technology.css").toExternalForm());
-        stage.setScene(scene);
-        stage.show();
-    }
-    public void AI(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AI.fxml"));
-        Parent root = fxmlLoader.load();
-        Object controller = fxmlLoader.getController();
-        if (controller instanceof categoryController) {
-            ((categoryController) controller).setCurrentUsername(currentUsername);
-        }
-        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("technology.css").toExternalForm());
-        stage.setScene(scene);
-        stage.show();
-    }
-    public void science(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("science.fxml"));
-        Parent root = fxmlLoader.load();
-        // Get the controller and set username
-        Object controller = fxmlLoader.getController();
-        if (controller instanceof categoryController) {
-            ((categoryController) controller).setCurrentUsername(currentUsername);
-        }
-        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("technology.css").toExternalForm());
-        stage.setScene(scene);
-        stage.show();
-    }
-    public void ArticleView(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("articleContainer.fxml"));
-        Parent root = fxmlLoader.load();
+                // Get the controller and set the username
+                RecommendController controller = fxmlLoader.getController();
+                controller.setCurrentUsername(getCurrentUsername());
 
-        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("articleContainer.css").toExternalForm());
-        stage.setScene(scene);
-        stage.show();
-    }
-
-
-
-
-    public static void main(String[] args) {
-        launch();
+                Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
+                stage.setUserData(this);
+                stage.setScene(scene);
+                stage.show();
+            } catch (IOException e) {
+                System.err.println("Navigation error: " + e.getMessage());
+            }
+        });
     }
 }

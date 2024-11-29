@@ -22,9 +22,9 @@
         <Label text="Admin Dashboard" styleClass="sidebar-title"/>
 
         <VBox spacing="10" styleClass="menu-items">
-            <Button fx:id="dashBoardBtn" text="Dashboard"  styleClass="menu-button"/>
+            <Button fx:id="dashBoardBtn"  text="Dashboard"  styleClass="menu-button"/>
             <Button fx:id="articlesBtn" text="View Articles" styleClass="menu-button" id="activeButton"/>
-            <Button fx:id="usersBtn" text="View Users" styleClass="menu-button"/>
+            <Button fx:id="usersBtn"  text="View Users" styleClass="menu-button"/>
             <Button fx:id="logoutBtn" text="Log out" styleClass="menu-button"/>
         </VBox>
 

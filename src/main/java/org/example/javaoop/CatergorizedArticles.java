@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.sql.DriverManager.getConnection;
 
-public class CatergorizedArticles extends Articles{
+public class CatergorizedArticles extends Article {
 
     //Variables for category
     private String categoryId;

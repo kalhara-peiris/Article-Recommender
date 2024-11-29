@@ -22,9 +22,9 @@
         <!-- Sidebar Menu -->
         <VBox styleClass="sidebar-menu" spacing="8">
             <Button text="Dashboard" styleClass="menu-item,active"/>
-            <Button text="View Articles" onAction="#loadUser" styleClass="menu-item"/>
-            <Button text="View Users" styleClass="menu-item"/>
-            <Button text="Log out" styleClass="menu-item"/>
+            <Button text="View Articles" onAction="#loadArticle" styleClass="menu-item"/>
+            <Button text="View Users" onAction="#loadUser" styleClass="menu-item"/>
+            <Button text="Log out" onAction="#logOut" styleClass="menu-item"/>
         </VBox>
 
         <!-- Admin Profile -->
