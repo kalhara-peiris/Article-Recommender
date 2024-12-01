@@ -173,8 +173,8 @@ public class CatergorizedArticles extends Article {
                 return;
             }
 
-            String selectQuery = "SELECT a.ArticleID, a.title, a.url FROM articletest a " +
-                    "WHERE NOT EXISTS (SELECT 1 FROM articlecategorytest ac WHERE ac.ArticleID = a.ArticleID)";
+            String selectQuery = "SELECT a.ArticleID, a.title, a.url FROM article a " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM articlecategory ac WHERE ac.ArticleID = a.ArticleID)";
             // Get all articles from Article table
 
             PreparedStatement pstmt = conn.prepareStatement(selectQuery);
@@ -324,7 +324,7 @@ public class CatergorizedArticles extends Article {
 
     private void storeCategorizationResult(Connection conn, String articleId, String title,
                                            String url, String categoryId) {
-        String insertQuery = "INSERT IGNORE INTO ArticleCategorytest " +
+        String insertQuery = "INSERT IGNORE INTO ArticleCategory " +
                 "(ArticleID, title, url, categoryID) VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {

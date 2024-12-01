@@ -14,6 +14,14 @@ public class DBHandler {
     public DBHandler() {
         initializeConnection();
     }
+    public Connection getConnection() throws SQLException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("MySQL JDBC Driver not found.", e);
+        }
+    }
 
     private void initializeConnection() {
         try {

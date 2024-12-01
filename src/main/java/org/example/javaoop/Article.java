@@ -19,7 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class Article {
+public class
+Article {
     private static final String API_KEY = "4e6f822740374499be7c2a5f6d721592";
 
     //Make them protected so child class can access

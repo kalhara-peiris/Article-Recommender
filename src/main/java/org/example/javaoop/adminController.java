@@ -13,11 +13,12 @@ import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 
 import java.io.IOException;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class adminController {
+    private CatergorizedArticles categorizer;
     @FXML
     private Button startCollectionButton;
     @FXML
@@ -45,6 +46,7 @@ public class adminController {
     @FXML
     public void initialize() {
         admin = new Admin();
+        categorizer = new CatergorizedArticles(Runtime.getRuntime().availableProcessors() * 2);
         updateArticleCount();
         updateUserCount();
     }
@@ -140,6 +142,7 @@ public class adminController {
         new Thread(collectionTask).start();
     }
 
+
     @FXML
     private void handleStartCategorization() {
         if (isCategorizationRunning) return;
@@ -152,24 +155,26 @@ public class adminController {
         Task<Void> categorizationTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                admin.categorizeArticles(
-                        totalUncategorized -> {
-                            if (totalUncategorized == 0) {
-                                Platform.runLater(() -> {
-                                    statusText.setText("No articles to categorize");
-                                    currentStatusLabel.setText("All articles are already categorized");
-                                    progressBar.setProgress(1.0);
-                                });
-                            }
-                        },
-                        new Admin.CategorizationProgressCallback() {
-                            @Override
-                            public void onProgress(int processed, int total) {
-                                double progress = (double) processed / total;
-                                Platform.runLater(() -> updateCategorizationProgress(processed, total, progress));
-                            }
-                        }
-                );
+                // Get count of uncategorized articles
+                int totalUncategorized = getUncategorizedArticleCount();
+
+                if (totalUncategorized == 0) {
+                    Platform.runLater(() -> {
+                        statusText.setText("No articles to categorize");
+                        currentStatusLabel.setText("All articles are already categorized");
+                        progressBar.setProgress(1.0);
+                    });
+                    return null;
+                }
+
+                // Set up progress callback
+                categorizer.setCategoryProgressCallback((processed, total) -> {
+                    double progress = (double) processed / total;
+                    Platform.runLater(() -> updateCategorizationProgress(processed, total, progress));
+                });
+
+                // Start categorization
+                categorizer.processCategorization();
                 return null;
             }
 
@@ -252,4 +257,21 @@ public class adminController {
         progressBar.setProgress(1.0);
         updateArticleCount();
     }
+
+    private int getUncategorizedArticleCount() {
+        try (Connection conn = DriverManager.getConnection(Article.dbUrl, Article.dbUser, Article.dbPassword)) {
+            String countQuery = "SELECT COUNT(*) AS total FROM Article a " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM ArticleCategory ac WHERE ac.ArticleID = a.ArticleID)";
+            try (PreparedStatement pstmt = conn.prepareStatement(countQuery);
+                 ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
 }
