@@ -60,6 +60,7 @@
 
                 <!-- Sign Up Button -->
                 <Button text="Create Account"
+                        fx:id="signUpButton"
                         onAction="#handleSignUp"
                         styleClass="sign-up-button"
                         maxWidth="Infinity"/>

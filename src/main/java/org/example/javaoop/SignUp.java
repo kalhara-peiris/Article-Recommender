@@ -22,11 +22,17 @@ public class SignUp {
     @FXML
     private CheckBox termsCheckbox;
 
+    @FXML
+    private Button signUpButton;
+
+    private DBHandler dbHandler = new DBHandler();
+
     private static final String DB_URL = "jdbc:mysql://localhost:3306/javacw";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(2);
+
 
     @FXML
     public void handleSignUp(ActionEvent event) {
@@ -38,74 +44,60 @@ public class SignUp {
         }
 
         CompletableFuture.runAsync(() -> {
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                // Check if username already exists
-                if (isUsernameTaken(conn, username)) {
-                    Platform.runLater(() ->
-                            showAlert(Alert.AlertType.ERROR, "Error", "Username already exists. Please choose another.")
-                    );
-                    return;
-                }
-
-                // Create new user
-                String insertQuery = "INSERT INTO user (username, password) VALUES (?, ?)";
-                try (PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
-                    pstmt.setString(1, username);
-                    pstmt.setString(2, password);
-                    pstmt.executeUpdate();
-
+            try {
+                User newUser = new User(username, password);
+                if (registerUser(newUser)) {
                     Platform.runLater(() -> {
                         showAlert(Alert.AlertType.INFORMATION, "Success", "Account created successfully!");
-                        try {
-                            loadSignIn(event);
-                        } catch (IOException e) {
-                            showAlert(Alert.AlertType.ERROR, "Error", "Failed to load sign in page: " + e.getMessage());
-                        }
+                        Stage stage = (Stage) signUpButton.getScene().getWindow();
+                        Navigator.navigateToLogin(stage);
                     });
                 }
             } catch (SQLException e) {
                 Platform.runLater(() ->
-                        showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to create account: " + e.getMessage())
+                        showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to create account")
                 );
             }
         }, executorService);
     }
+    private boolean registerUser(User user) throws SQLException {
+        // Check if username exists
+        if (dbHandler.isUsernameTaken(user.getUsername())) {
+            Platform.runLater(() ->
+                    showAlert(Alert.AlertType.ERROR, "Error", "Username already exists")
+            );
+            return false;
+        }
+
+        // Insert new user
+        return dbHandler.insertUser(user.getUsername(), user.getPassword());
+    }
+
 
     private boolean validateInput(String username, String password) {
+        if(username.equals("admin") && password.equals("12345")){
+            showAlert(Alert.AlertType.ERROR,"Error","Please sign in as admin");
+            return false;
+        }
         if (username.isEmpty() || password.isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Error", "Please fill in all fields.");
             return false;
         }
-
         if (password.length() < 8) {
             showAlert(Alert.AlertType.ERROR, "Error", "Password must be at least 8 characters long.");
             return false;
         }
-
         if (!password.matches(".*[a-zA-Z].*") || !password.matches(".*\\d.*")) {
             showAlert(Alert.AlertType.ERROR, "Error", "Password must contain both letters and numbers.");
             return false;
         }
-
         if (!termsCheckbox.isSelected()) {
             showAlert(Alert.AlertType.ERROR, "Error", "Please accept the terms and conditions.");
             return false;
         }
-
         return true;
     }
 
-    private boolean isUsernameTaken(Connection conn, String username) throws SQLException {
-        String query = "SELECT COUNT(*) FROM user WHERE username = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        }
-        return false;
-    }
 
     @FXML
     public void loadSignIn(ActionEvent event) throws IOException {

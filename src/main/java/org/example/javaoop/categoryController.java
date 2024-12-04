@@ -42,7 +42,7 @@ public abstract class categoryController extends CatergorizedArticles {
 
     protected List<Article> currentArticles;
     protected int currentIndex = 0;
-    protected String currentUsername;
+
     protected User currentUser;
 
     protected static final String DB_URL = "jdbc:mysql://localhost:3306/javacw";
@@ -96,12 +96,10 @@ public abstract class categoryController extends CatergorizedArticles {
     }
 
     private void initializeUser() {
-        Stage stage = (Stage) searchField.getScene().getWindow();
-        if (stage != null && stage.getUserData() instanceof HelloApplication) {
-            HelloApplication app = (HelloApplication) stage.getUserData();
-            this.currentUsername = app.getCurrentUsername();
-            this.currentUser = new User(currentUsername);
-        }
+       String username = User.getCurrentUsername();
+       if(username !=null && !username.trim().isEmpty()){
+           this.currentUser=new User(username);
+       }
     }
 
     private void setupEventHandlers() {
@@ -180,11 +178,15 @@ public abstract class categoryController extends CatergorizedArticles {
     protected void handleSkipButton() {
         CompletableFuture.runAsync(() -> {
             try {
+                if (currentUser == null) {
+                    Platform.runLater(() -> showError("Error", "No user is currently logged in"));
+                    return;
+                }
                 for (int i = 0; i < 3; i++) {
                     int articleIndex = currentIndex + i;
                     if (articleIndex < currentArticles.size()) {
                         Article article = currentArticles.get(articleIndex);
-                        currentUser.skipArticle(article.getId()); // Pass the ID instead of the Article object
+                        currentUser.skipArticle(article.getArticleId()); // Pass the ID instead of the Article object
                     }
                 }
                 currentIndex += 3;
@@ -261,7 +263,11 @@ public abstract class categoryController extends CatergorizedArticles {
     protected void showArticleContent(Article article) {
         CompletableFuture.runAsync(() -> {
             try {
-                currentUser.readArticle(article.getId());
+                if(currentUser==null){
+                    Platform.runLater(()-> showError("Error","No user is currently logged in"));
+                    return;
+                }
+                currentUser.readArticle(article.getArticleId());
                 Platform.runLater(() -> {
                     try {
                         loadArticleView(article);
@@ -292,13 +298,21 @@ public abstract class categoryController extends CatergorizedArticles {
         return null;
     }
 
+
     private void loadArticleView(Article article) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("articleContainer.fxml"));
         Parent root = loader.load();
         ArticleContainer controller = loader.getController();
-        controller.setCurrentUsername(currentUsername);
-        controller.setArticleData(article.getId(), article.getTitle(),
-                article.getUrl(), getCategoryName(), currentUsername);
+
+        // Use currentUser's username
+        String username = currentUser.getUsername();
+        controller.setArticleData(
+                article.getArticleId(),
+                article.getTitle(),
+                article.getUrl(),
+                getCategoryName(),
+                username
+        );
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("articleContainer.css").toExternalForm());
@@ -331,56 +345,49 @@ public abstract class categoryController extends CatergorizedArticles {
                 return "Unknown";
         }
     }
-
-    // Navigation methods
-    @FXML
-    public void recommended(ActionEvent event) throws IOException {
-        navigateToView(event, "recommend.fxml", "articleStyle.css");
+    private Stage getStageFromEvent(ActionEvent event) {
+        return (Stage) ((Node) event.getSource()).getScene().getWindow();
     }
 
+
     @FXML
-    public void userProfile(ActionEvent event) throws IOException {
-        navigateToView(event, "userProfile.fxml", "userProfile.css");
+    public void recommended(ActionEvent event) {
+        Navigator.navigateToRecommendGUI(getStageFromEvent(event), User.getCurrentUsername());
     }
 
     @FXML
-    public void technology(ActionEvent event) throws IOException {
-        navigateToView(event, "technology.fxml", "technology.css");
+    public void userProfile(ActionEvent event) {
+        Navigator.navigateToUserProfileGUI(getStageFromEvent(event), User.getCurrentUsername());
     }
-
     @FXML
-    public void health(ActionEvent event) throws IOException {
-        navigateToView(event, "health.fxml", "technology.css");
+    public void technology(ActionEvent event) {
+        Navigator.navigateToTechnologyGUI(getStageFromEvent(event), User.getCurrentUsername());
     }
-
     @FXML
-    public void sport(ActionEvent event) throws IOException {
-        navigateToView(event, "sport.fxml", "technology.css");
+    public void health(ActionEvent event) {
+        Navigator.navigateToHealthGUI(getStageFromEvent(event), User.getCurrentUsername());
     }
-
     @FXML
-    public void AI(ActionEvent event) throws IOException {
-        navigateToView(event, "AI.fxml", "technology.css");
+    public void sport(ActionEvent event) {
+        Navigator.navigateToSportGUI(getStageFromEvent(event), User.getCurrentUsername());
     }
-
     @FXML
-    public void science(ActionEvent event) throws IOException {
-        navigateToView(event, "science.fxml", "technology.css");
+    public void AI(ActionEvent event) {
+        Navigator.navigateToAIGUI(getStageFromEvent(event), User.getCurrentUsername());
+    }
+    @FXML
+    public void science(ActionEvent event) {
+        Navigator.navigateToScienceGUI(getStageFromEvent(event), User.getCurrentUsername());
     }
 
-    protected void navigateToView(ActionEvent event, String fxmlFile, String cssFile) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlFile));
-        Parent root = fxmlLoader.load();
-        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource(cssFile).toExternalForm());
-        stage.setScene(scene);
-        stage.show();
-    }
 
     public void setCurrentUsername(String username) {
-        this.currentUsername = username;
-        this.currentUser = new User(username);
+        if (username != null && !username.trim().isEmpty()) {
+            User.setCurrentUsername(username); // Update static username
+            this.currentUser = new User(username);
+        } else {
+            this.currentUser = null;
+        }
     }
 
     public void cleanup() {
@@ -396,27 +403,5 @@ public abstract class categoryController extends CatergorizedArticles {
         }
     }
 
-    protected static class Article {
-        private final String id;
-        private final String title;
-        private final String url;
 
-        public Article(String id, String title, String url) {
-            this.id = id;
-            this.title = title;
-            this.url = url;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-    }
 }

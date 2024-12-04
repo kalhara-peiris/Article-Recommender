@@ -20,11 +20,11 @@ public class SignIn {
     private TextField signInUsername;
     @FXML
     private PasswordField signInPassword;
+    @FXML
+    private Button logIn;
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/javacw";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
-
+    private User user;
+    private final DBHandler dbHandler = new DBHandler();
     private final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @FXML
@@ -32,61 +32,51 @@ public class SignIn {
         String username = signInUsername.getText().trim();
         String password = signInPassword.getText();
 
+        if (!validateInput(username, password)) {
+            return;
+        }
+
+        if (isAdminLogin(username, password)) {
+            handleAdminLogin();
+            return;
+        }
+
+        handleUserLogin(username, password);
+    }
+
+    private boolean validateInput(String username, String password) {
         if (username.isEmpty() || password.isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Error", "Please fill in all fields.");
-            return;
+            return false;
         }
-        if (username.equals("admin") && password.equals("12345")) {
-            Platform.runLater(() -> {
-                try {
-                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("adminInterface.fxml"));
-                    Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
-                    scene.getStylesheets().add(getClass().getResource("adminUI.css").toExternalForm());
+        return true;
+    }
 
-                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                    HelloApplication app = (HelloApplication) stage.getUserData();
-                    app.setCurrentUsername(username);
+    private boolean isAdminLogin(String username, String password) {
+        return username.equals("admin") && password.equals("12345");
+    }
 
-                    stage.setScene(scene);
-                    stage.setTitle("Admin Dashboard");
-                    stage.show();
-                } catch (IOException e) {
-                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to load admin page: " + e.getMessage());
-                }
-            });
-            return;
-        }
+    private void handleAdminLogin() {
+        Platform.runLater(() -> {
+            Stage stage = (Stage) logIn.getScene().getWindow();
+            user.setCurrentUsername("admin");
+            Navigator.navigateToAdmin(stage);
+        });
+    }
 
+    private void handleUserLogin(String username, String password) {
         CompletableFuture.runAsync(() -> {
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String query = "SELECT * FROM user WHERE username = ? AND password = ?";
-                try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                    pstmt.setString(1, username);
-                    pstmt.setString(2, password);
-
-                    ResultSet rs = pstmt.executeQuery();
-                    if (rs.next()) {
-                        Platform.runLater(() -> {
-                            try {
-                                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("recommend.fxml"));
-                                Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
-                                scene.getStylesheets().add(getClass().getResource("articleStyle.css").toExternalForm());
-
-                                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                                HelloApplication app = (HelloApplication) stage.getUserData();
-                                app.setCurrentUsername(username);
-
-                                stage.setScene(scene);
-                                stage.show();
-                            } catch (IOException e) {
-                                showAlert(Alert.AlertType.ERROR, "Error", "Failed to load main page: " + e.getMessage());
-                            }
-                        });
-                    } else {
-                        Platform.runLater(() ->
-                                showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid username or password.")
-                        );
-                    }
+            try {
+                if (dbHandler.validateUser(username, password)) {
+                    Platform.runLater(() -> {
+                        user.setCurrentUsername(username);
+                        Stage stage = (Stage) logIn.getScene().getWindow();
+                        Navigator.navigateToRecommendGUI(stage, username);
+                    });
+                } else {
+                    Platform.runLater(() ->
+                            showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid username or password.")
+                    );
                 }
             } catch (SQLException e) {
                 Platform.runLater(() ->

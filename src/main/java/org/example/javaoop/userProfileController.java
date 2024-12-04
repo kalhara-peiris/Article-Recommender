@@ -35,16 +35,20 @@ public class userProfileController {
 
     private String currentUsername;
 
+
+
     @FXML
     public void initialize() {
         Platform.runLater(() -> {
-            Stage stage = (Stage) username.getScene().getWindow();
-            if (stage != null && stage.getUserData() instanceof HelloApplication) {
-                HelloApplication app = (HelloApplication) stage.getUserData();
-                currentUsername = app.getCurrentUsername();
+            // Get username from User class instead of stage userData
+            String username = User.getCurrentUsername();
+            if (username != null) {
+                currentUsername = username;
                 loadUserProfile();
                 loadUserStats();
                 setupTabHandlers();
+            } else {
+                showError("Error", "No user is currently logged in");
             }
         });
 
@@ -56,6 +60,8 @@ public class userProfileController {
             }
         });
     }
+
+
 
     private void setupTabHandlers() {
         // Add listener for tab selection changes
@@ -72,14 +78,16 @@ public class userProfileController {
         }
     }
 
+
     private void loadUserProfile() {
-        if (currentUsername != null) {
-            username.setText(currentUsername);
+        String username = getCurrentUsername();
+        if (username != null) {
+            this.username.setText(username);
 
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
                 String query = "SELECT MIN(interactionTime) as firstInteraction FROM userinteraction WHERE username = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                    stmt.setString(1, currentUsername);
+                    stmt.setString(1, username);
                     ResultSet rs = stmt.executeQuery();
                     if (rs.next()) {
                         Timestamp firstInteraction = rs.getTimestamp("firstInteraction");
@@ -99,11 +107,13 @@ public class userProfileController {
     }
 
     private void loadUserStats() {
+        String username = getCurrentUsername();
+        if(username==null) return;
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String query = "SELECT interactionType, COUNT(*) as count FROM userinteraction " +
                     "WHERE username = ? GROUP BY interactionType";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setString(1, currentUsername);
+                stmt.setString(1, username);
                 ResultSet rs = stmt.executeQuery();
 
                 int reads = 0, likes = 0, saves = 0, dislikes = 0, skips = 0;
@@ -133,6 +143,7 @@ public class userProfileController {
     }
 
     private void loadArticlesForTab(Tab tab) {
+        String username = getCurrentUsername();
         String interactionType = getInteractionTypeForTab(tab.getText());
         System.out.println("Loading articles for interaction type: " + interactionType); // Debug log
 
@@ -148,7 +159,7 @@ public class userProfileController {
                     "ORDER BY ui.interactionTime DESC";
 
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setString(1, currentUsername);
+                stmt.setString(1, username);
                 stmt.setString(2, interactionType);
                 System.out.println("Executing query with username: " + currentUsername +
                         " and type: " + interactionType); // Debug log
@@ -221,7 +232,7 @@ public class userProfileController {
     }
 
     @FXML
-    public void recommended(ActionEvent event) throws IOException {
+    public void recommendeds(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("recommend.fxml"));
         Parent root = loader.load();
         Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
@@ -233,6 +244,24 @@ public class userProfileController {
             stage.setUserData(app);
         }
 
+        stage.setScene(scene);
+        stage.show();
+    }
+    @FXML
+    public void recommended(ActionEvent event) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("recommend.fxml"));
+        Parent root = loader.load();
+
+        // Get the controller and set the current username
+        RecommendController controller = loader.getController();
+        String username = User.getCurrentUsername();
+        if (username != null) {
+            controller.setCurrentUsername(username);
+        }
+
+        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("articleStyle.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
     }
@@ -248,12 +277,20 @@ public class userProfileController {
     }
 
     public void setCurrentUsername(String username) {
-        this.currentUsername = username;
-        if (this.username != null) {
-            this.username.setText(username);
-            loadUserProfile();
-            loadUserStats();
-            setupTabHandlers();
+        if (username != null && !username.trim().isEmpty()) {
+            User.setCurrentUsername(username); // Update the static username
+            this.currentUsername = username;
+            if (this.username != null) {
+                this.username.setText(username);
+                loadUserProfile();
+                loadUserStats();
+                setupTabHandlers();
+            }
         }
+    }
+
+    // Helper method to get current username
+    private String getCurrentUsername() {
+        return currentUsername != null ? currentUsername : User.getCurrentUsername();
     }
 }

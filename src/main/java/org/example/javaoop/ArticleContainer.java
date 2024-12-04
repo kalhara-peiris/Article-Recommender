@@ -47,6 +47,7 @@ public class ArticleContainer {
     private Stage primaryStage;
     private User currentUser;
 
+
     private static final String DB_URL = "jdbc:mysql://localhost:3306/javacw";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
@@ -77,28 +78,25 @@ public class ArticleContainer {
             }
         }
     }
-
     @FXML
     public void initialize() {
         CompletableFuture.runAsync(() -> {
             Platform.runLater(() -> {
-                if (currentUsername == null) {
-                    try {
-                        Stage stage = (Stage) likeButton.getScene().getWindow();
-                        if (stage != null && stage.getUserData() instanceof HelloApplication) {
-                            HelloApplication app = (HelloApplication) stage.getUserData();
-                            currentUsername = app.getCurrentUsername();
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error in initialize: " + e.getMessage());
-                    }
+                // Get current username from User class instead of HelloApplication
+                String currentUsername = currentUser.getCurrentUsername();
+                if (currentUsername != null) {
+                    currentUser = new User(currentUsername);
+                    setupButtonHandlers();
+                } else {
+                    showError("Error", "No user is currently logged in. Please log in again.");
                 }
-                setupButtonHandlers();
             });
         }, executorService);
     }
+
+
     private void handleLike() {
-        if (currentUsername == null || currentUsername.trim().isEmpty()) {
+        if (currentUser == null || currentUser.getCurrentUsername()==null) {
             showError("Error", "No user is currently logged in. Please log in again.");
             return;
         }
@@ -159,11 +157,11 @@ public class ArticleContainer {
 
     public void setArticleData(String articleId, String title, String url, String category, String username) {
         CompletableFuture.runAsync(() -> {
-            setCurrentUsername(username);
             if (username == null || username.trim().isEmpty()) {
                 Platform.runLater(() -> showError("Error", "No user is currently logged in. Please log in again."));
                 return;
             }
+            currentUser = new User(username);
             this.articleId = articleId;
             this.articleUrl = url;
 

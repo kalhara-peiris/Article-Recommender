@@ -22,6 +22,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+
+
 public class RecommendController extends categoryController {
     @FXML
     protected Button readMore1;
@@ -77,6 +79,7 @@ public class RecommendController extends categoryController {
         }
     }
 
+
     @FXML
     @Override
     public void initialize() {
@@ -87,24 +90,19 @@ public class RecommendController extends categoryController {
         isInitialized = true;
 
         System.out.println("RecommendController initializing...");
-        System.out.println("Current username: " + currentUsername);
 
-        if (currentUsername == null) {
-            Platform.runLater(() -> {
-                try {
-                    Stage stage = (Stage) searchField.getScene().getWindow();
-                    if (stage != null && stage.getUserData() instanceof HelloApplication) {
-                        HelloApplication app = (HelloApplication) stage.getUserData();
-                        currentUsername = app.getCurrentUsername();
-                        System.out.println("Username retrieved from HelloApplication: " + currentUsername);
-                        setupEventHandlers();
-                        loadCategoryArticles();
-                        displayCurrentArticles();
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error in initialize: " + e.getMessage());
-                }
-            });
+        // Get username from User class
+        String username = User.getCurrentUsername();
+        System.out.println("Current username: " + username);
+
+        if (username != null) {
+            this.currentUser = new User(username);
+            setupEventHandlers();
+            loadCategoryArticles();
+            displayCurrentArticles();
+        } else {
+            System.err.println("No user is currently logged in");
+            Platform.runLater(() -> showError("Error", "No user is currently logged in. Please log in again."));
         }
 
         setupEventHandlers();
@@ -129,8 +127,8 @@ public class RecommendController extends categoryController {
 
     @Override
     protected void loadCategoryArticles() {
-        System.out.println("Loading articles for user: " + currentUsername);
-        if (currentUsername == null || currentUsername.trim().isEmpty()) {
+        System.out.println("Loading articles for user: " + currentUser.getUsername());
+        if (currentUser.getUsername() == null || currentUser.getUsername().trim().isEmpty()) {
             System.out.println("Username is null or empty, skipping article loading");
             return;
         }
@@ -156,7 +154,7 @@ public class RecommendController extends categoryController {
         try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String query = "SELECT COUNT(*) FROM userinteraction WHERE username = ?";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setString(1, currentUsername);
+                stmt.setString(1, currentUser.getUsername());
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -202,7 +200,7 @@ public class RecommendController extends categoryController {
         CompletableFuture.supplyAsync(() -> getUserCategoryPreferences(), executorService)
                 .thenAcceptAsync(categoryScores -> {
                     try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                        System.out.println("Loading personalized articles for user: " + currentUsername);
+                        System.out.println("Loading personalized articles for user: " + currentUser.getUsername());
 
                         String query = "SELECT a.ArticleID, a.title, a.url, a.categoryID " +
                                 "FROM ArticleCategory a " +
@@ -212,7 +210,7 @@ public class RecommendController extends categoryController {
                         List<ArticleScore> scoredArticles = new ArrayList<>();
 
                         try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                            stmt.setString(1, currentUsername);
+                            stmt.setString(1, currentUser.getUsername());
                             ResultSet rs = stmt.executeQuery();
 
                             while (rs.next()) {
@@ -261,7 +259,7 @@ public class RecommendController extends categoryController {
         try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String query = "SELECT categoryID, preferenceScore FROM userpreference WHERE username = ?";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setString(1, currentUsername);
+                stmt.setString(1, currentUser.getUsername());
                 ResultSet rs = stmt.executeQuery();
 
                 while (rs.next()) {
@@ -283,16 +281,21 @@ public class RecommendController extends categoryController {
     protected void showArticleContent(Article article) {
         CompletableFuture.runAsync(() -> {
             try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+                String username = User.getCurrentUsername();
+                if(username==null){
+                    Platform.runLater(() -> showError("Error","No user is currently logged in"));
+                    return;
+                }
                 String query = "INSERT INTO userinteraction (interactionID, username, ArticleID, interactionType) " +
                         "VALUES (?, ?, ?, ?)";
                 try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                     pstmt.setString(1, UUID.randomUUID().toString());
-                    pstmt.setString(2, currentUsername);
-                    pstmt.setString(3, article.getId());
+                    pstmt.setString(2, currentUser.getUsername());
+                    pstmt.setString(3, article.getArticleId());
                     pstmt.setString(4, "READ");
                     pstmt.executeUpdate();
                 }
-                DB.updatePreferenceScore(currentUsername,getCategoryId(article.getId()), 3);
+                DB.updatePreferenceScore(currentUser.getUsername(),getCategoryId(article.getArticleId()), 3);
 
                 Platform.runLater(() -> {
                     try {
@@ -301,13 +304,13 @@ public class RecommendController extends categoryController {
                         scene.getStylesheets().add(getClass().getResource("articleContainer.css").toExternalForm());
 
                         ArticleContainer controller = loader.getController();
-                        controller.setCurrentUsername(currentUsername);
+
                         controller.setArticleData(
-                                article.getId(),
+                                article.getArticleId(),
                                 article.getTitle(),
                                 article.getUrl(),
                                 getCategoryNameArticle(article),
-                                currentUsername
+                                currentUser.getUsername()
                         );
 
                         Stage stage = (Stage) searchField.getScene().getWindow();
@@ -353,7 +356,7 @@ public class RecommendController extends categoryController {
                 if (articleIndex < currentArticles.size()) {
                     Article article = currentArticles.get(articleIndex);
                     setArticleTitle(i + 1, article.getTitle());
-                    setArticleCategory(i + 1, article.getId());
+                    setArticleCategory(i + 1, article.getArticleId());
                     setupReadMoreButton(i + 1, article);
                     System.out.println("Set article " + (i+1) + ": " + article.getTitle());
                 }
@@ -393,6 +396,11 @@ public class RecommendController extends categoryController {
     protected void handleSkipButton() {
         CompletableFuture.runAsync(() -> {
             try {
+                String username = User.getCurrentUsername();
+                if (username == null) {
+                    Platform.runLater(() -> showError("Error", "No user is currently logged in"));
+                    return;
+                }
                 if (DB == null) {
                     DB = new DBHandler(); // Initialize if not already done
                 }
@@ -401,11 +409,11 @@ public class RecommendController extends categoryController {
                     int articleIndex = currentIndex + i;
                     if (articleIndex < currentArticles.size()) {
                         Article article = currentArticles.get(articleIndex);
-                        recordInteraction(article.getId(), "SKIP");
+                        recordInteraction(article.getArticleId(), "SKIP");
                         // Update preference score for the skipped article's category
-                        String categoryId = getCategoryId(article.getId());
+                        String categoryId = getCategoryId(article.getArticleId());
                         if (categoryId != null) {
-                            DB.updatePreferenceScore(currentUsername, categoryId, -1);
+                            DB.updatePreferenceScore(currentUser.getUsername(), categoryId, -1);
                         }
                     }
                 }
@@ -431,7 +439,7 @@ public class RecommendController extends categoryController {
 
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setString(1, UUID.randomUUID().toString());
-                stmt.setString(2, currentUsername);
+                stmt.setString(2, currentUser.getUsername());
                 stmt.setString(3, articleId);
                 stmt.setString(4, interactionType);
                 stmt.executeUpdate();
@@ -443,17 +451,21 @@ public class RecommendController extends categoryController {
         }
     }
 
+
     @Override
     public void setCurrentUsername(String username) {
         System.out.println("Setting username in RecommendController: " + username);
-        this.currentUsername = username;
-
         if (username != null && !username.trim().isEmpty()) {
+            User.setCurrentUsername(username);
+            this.currentUser = new User(username);
+
             CompletableFuture.runAsync(() -> {
                 System.out.println("Loading articles for user: " + username);
                 loadCategoryArticles();
                 Platform.runLater(this::displayCurrentArticles);
             }, executorService);
+        } else {
+            this.currentUser = null;
         }
     }
 
@@ -470,7 +482,7 @@ public class RecommendController extends categoryController {
     }
 
     public String getCategoryNameArticle(Article article) {
-        switch (getCategoryId(article.getId())) {
+        switch (getCategoryId(article.getArticleId())) {
             case "C01": return "Technology";
             case "C02": return "Health";
             case "C03": return "Sports";

@@ -2,9 +2,10 @@ package org.example.javaoop;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class User {
-    private String username;
+    private final String username;
     private DBHandler dbManager;
     private Article article;
     private ArrayList<Article> articles = new ArrayList<>();
@@ -16,10 +17,22 @@ public class User {
         this.username = username;
         this.password = password;
     }
+    protected static final AtomicReference<String> currentUsername = new AtomicReference<>();
 
-    public String getUsername() {
+    public static void setCurrentUsername(String username) {
+        currentUsername.set(username);
+    }
+
+    public static String getCurrentUsername() {
+        return currentUsername.get();
+    }
+    public String getUsername(){
         return username;
     }
+
+
+
+
 
     public String getPassword() {
         return password;

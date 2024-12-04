@@ -51,6 +51,7 @@
 
                 <!-- Sign In Button -->
                 <Button text="Sign In"
+                        fx:id="logIn"
                         onAction="#handleSignIn"
                         styleClass="sign-in-button"
                         maxWidth="Infinity"/>
@@ -59,6 +60,7 @@
                 <HBox alignment="CENTER" spacing="5">
                     <Label text="Don't have an account?"/>
                     <Hyperlink text="Create one"
+                               onAction="#loadSignUp"
                                styleClass="create-account-link"/>
                 </HBox>
             </VBox>

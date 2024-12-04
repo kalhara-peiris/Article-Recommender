@@ -1,7 +1,11 @@
 package org.example.javaoop;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
+
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -322,4 +326,40 @@ public class DBHandler {
             e.printStackTrace();
         }
     }
+    public boolean isUsernameTaken(String username) throws SQLException {
+        String query = "SELECT COUNT(*) FROM user WHERE username = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+        return false;
+    }
+
+    public boolean insertUser(String username,String password){
+        String insertQuery = "INSERT INTO user (username, password) VALUES (?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public boolean validateUser(String username, String password) throws SQLException {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "SELECT * FROM user WHERE username = ? AND password = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setString(1, username);
+                pstmt.setString(2, password);
+
+                ResultSet rs = pstmt.executeQuery();
+                return rs.next();
+            }
+        }
+    }
+
 }
