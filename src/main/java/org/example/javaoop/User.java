@@ -1,10 +1,13 @@
 package org.example.javaoop;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class User {
     private String username;
     private DBHandler dbManager;
+    private Article article;
+    private ArrayList<Article> articles = new ArrayList<>();
 
     private String password;
 
@@ -27,7 +30,7 @@ public class User {
         this.dbManager = new DBHandler();
     }
 
-    public void recordReadInteraction(String articleId) throws SQLException {
+    public void readArticle(String articleId) throws SQLException {
         dbManager.recordInteraction(username, articleId, "READ");
         String categoryId = dbManager.getCategoryForArticle(articleId);
         if (categoryId != null) {
@@ -35,7 +38,7 @@ public class User {
         }
     }
 
-    public void recordSkipInteraction(String articleId) throws SQLException {
+    public void skipArticle(String articleId) throws SQLException {
         if (!dbManager.hasReadArticle(username, articleId)) {
             dbManager.recordInteraction(username, articleId, "SKIP");
             String categoryId = dbManager.getCategoryForArticle(articleId);
@@ -44,7 +47,7 @@ public class User {
             }
         }
     }
-    public void recordLikeInteraction(String articleId) throws SQLException {
+    public void likeArticle(String articleId) throws SQLException {
         dbManager.recordInteraction(username, articleId, "LIKE");
         String categoryId = dbManager.getCategoryForArticle(articleId);
         if (categoryId != null) {
@@ -52,7 +55,7 @@ public class User {
         }
     }
 
-    public void recordDislikeInteraction(String articleId) throws SQLException {
+    public void disLikeArticle(String articleId) throws SQLException {
         dbManager.recordInteraction(username, articleId, "DISLIKE");
         String categoryId = dbManager.getCategoryForArticle(articleId);
         if (categoryId != null) {
@@ -60,7 +63,7 @@ public class User {
         }
     }
 
-    public void recordSaveInteraction(String articleId) throws SQLException {
+    public void saveArticle(String articleId) throws SQLException {
         dbManager.recordInteraction(username, articleId, "SAVE");
     }
 

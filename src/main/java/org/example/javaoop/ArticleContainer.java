@@ -12,16 +12,13 @@ import javafx.scene.Scene;
 import javafx.fxml.FXMLLoader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import java.io.IOException;
-import java.util.UUID;
 import java.util.concurrent.*;
 
 public class ArticleContainer {
@@ -108,7 +105,7 @@ public class ArticleContainer {
 
         CompletableFuture.runAsync(() -> {
             try {
-                currentUser.recordLikeInteraction(articleId);
+                currentUser.likeArticle(articleId);
                 Platform.runLater(() -> {
                     likeButton.setDisable(true);
                     dislikeButton.setDisable(true);
@@ -125,7 +122,7 @@ public class ArticleContainer {
     private void handleDislike() {
         CompletableFuture.runAsync(() -> {
             try {
-                currentUser.recordDislikeInteraction(articleId);
+                currentUser.disLikeArticle(articleId);
                 Platform.runLater(() -> {
                     likeButton.setDisable(true);
                     dislikeButton.setDisable(true);
@@ -142,7 +139,7 @@ public class ArticleContainer {
     private void handleSave() {
         CompletableFuture.runAsync(() -> {
             try {
-                currentUser.recordSaveInteraction(articleId);
+                currentUser.saveArticle(articleId);
                 Platform.runLater(() -> {
                     saveButton.setDisable(true);
                     showSuccess("Article saved successfully!");

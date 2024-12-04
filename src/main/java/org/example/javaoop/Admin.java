@@ -5,7 +5,7 @@ import javafx.collections.ObservableList;
 import java.sql.SQLException;
 import java.util.function.Consumer;
 
-public class Admin {
+public class Admin extends User {
     private final DBHandler dbHandler;
     private final Article articleCollector;
     private final CatergorizedArticles categorizer;
@@ -21,6 +21,7 @@ public class Admin {
     }
 
     public Admin() {
+        super("admin","12345");
         this.dbHandler = new DBHandler();
         this.articleCollector = new Article();
         this.categorizer = new CatergorizedArticles(Runtime.getRuntime().availableProcessors() * 2);

@@ -184,7 +184,7 @@ public abstract class categoryController extends CatergorizedArticles {
                     int articleIndex = currentIndex + i;
                     if (articleIndex < currentArticles.size()) {
                         Article article = currentArticles.get(articleIndex);
-                        currentUser.recordSkipInteraction(article.getId()); // Pass the ID instead of the Article object
+                        currentUser.skipArticle(article.getId()); // Pass the ID instead of the Article object
                     }
                 }
                 currentIndex += 3;
@@ -261,7 +261,7 @@ public abstract class categoryController extends CatergorizedArticles {
     protected void showArticleContent(Article article) {
         CompletableFuture.runAsync(() -> {
             try {
-                currentUser.recordReadInteraction(article.getId());
+                currentUser.readArticle(article.getId());
                 Platform.runLater(() -> {
                     try {
                         loadArticleView(article);
