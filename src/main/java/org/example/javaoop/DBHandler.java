@@ -8,6 +8,7 @@ import javafx.scene.control.Alert;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DBHandler {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/javacw";
@@ -249,6 +250,51 @@ public class DBHandler {
             pstmt.executeUpdate();
         }
     }
+    public boolean hasUserInteractions(String username) throws SQLException {
+        String query = "SELECT COUNT(*) FROM userinteraction WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+        return false;
+    }
+    public List<Article> getPersonalizedArticles(String username, Map<String, Double> preferences) throws SQLException {
+        List<Article> articles = new ArrayList<>();
+        String query = "SELECT a.ArticleID, a.title, a.url, a.categoryID " +
+                "FROM ArticleCategory a " +
+                "WHERE a.ArticleID NOT IN " +
+                "(SELECT ArticleID FROM userinteraction WHERE username = ?)";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            // Create a list of ArticleScore objects
+            List<ArticleScore> scoredArticles = new ArrayList<>();
+            while (rs.next()) {
+                String categoryId = rs.getString("categoryID");
+                double categoryScore = preferences.getOrDefault(categoryId, 0.0);
+
+                Article article = new Article(
+                        rs.getString("ArticleID"),
+                        rs.getString("title"),
+                        rs.getString("url")
+                );
+
+                scoredArticles.add(new ArticleScore(article, categoryScore));
+            }
+
+            // Sort articles by score and select top 9
+            return scoredArticles.stream()
+                    .sorted((a1, a2) -> Double.compare(a2.score, a1.score))
+                    .limit(9)
+                    .map(as -> as.article)
+                    .collect(Collectors.toList());
+        }
+    }
 
     // Category Management Methods
     public String getCategoryForArticle(String articleId) throws SQLException {
@@ -359,6 +405,51 @@ public class DBHandler {
                 ResultSet rs = pstmt.executeQuery();
                 return rs.next();
             }
+        }
+    }
+    // Add to DBHandler class
+    public List<Article> getCategoryArticles(String categoryId) throws SQLException {
+        List<Article> articles = new ArrayList<>();
+        String query = "SELECT * FROM articlecategory WHERE categoryID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, categoryId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                articles.add(new Article(
+                        rs.getString("ArticleID"),
+                        rs.getString("title"),
+                        rs.getString("url")
+                ));
+            }
+        }
+        return articles;
+    }
+
+    public List<Article> searchCategoryArticles(String categoryId, String searchTerm) throws SQLException {
+        List<Article> articles = new ArrayList<>();
+        String query = "SELECT * FROM ArticleCategory WHERE categoryID = ? AND title LIKE ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, categoryId);
+            stmt.setString(2, "%" + searchTerm + "%");
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                articles.add(new Article(
+                        rs.getString("ArticleID"),
+                        rs.getString("title"),
+                        rs.getString("url")
+                ));
+            }
+        }
+        return articles;
+    }
+
+    private static class ArticleScore {
+        final Article article;
+        final double score;
+
+        ArticleScore(Article article, double score) {
+            this.article = article;
+            this.score = score;
         }
     }
 

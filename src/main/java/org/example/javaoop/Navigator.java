@@ -7,8 +7,12 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.sql.*;
 
 public class Navigator {
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/javacw";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "";
     private static final String FXML_PATH = "/org/example/javaoop/";
     private static final String CSS_PATH = "/org/example/javaoop/";
     // Navigate to recommend page for regular users
@@ -28,11 +32,9 @@ public class Navigator {
         loadScene(stage, "AI.fxml", "technology.css");
     }
     public static void navigateToTechnologyGUI(Stage stage, String username) {
-        loadScene(stage, "recommend.fxml", "technology.css");
+        loadScene(stage, "technology.fxml", "technology.css");
     }
-    public static void navigateToArticleContent(Stage stage, String username) {
-        loadScene(stage, "articleContainer.fxml", "articleContainer.css");
-    }
+
     public static void navigateToUserProfileGUI(Stage stage, String username) {
         loadScene(stage, "userProfile.fxml", "userProfile.css");
     }
@@ -54,6 +56,51 @@ public class Navigator {
     // Navigate back to login page (for logout)
     public static void navigateToLogin(Stage stage) {
         loadScene(stage, "signIn.fxml", "SignIn.css");
+    }
+
+
+    // Add helper method to get category name
+    private static String getCategoryNameForArticle(String articleId) {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "SELECT categoryID FROM ArticleCategory WHERE ArticleID = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setString(1, articleId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    String categoryId = rs.getString("categoryID");
+                    switch (categoryId) {
+                        case "C01": return "Technology";
+                        case "C02": return "Health";
+                        case "C03": return "Sports";
+                        case "C04": return "AI";
+                        case "C06": return "Science";
+                        default: return "Unknown";
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            showError("Database Error", "Could not get category name: " + e.getMessage());
+            return "Unknown";
+        }
+        return "Unknown";
+    }
+
+
+    // Helper method to get category ID for an article
+    private static String getCategoryIdForArticle(String articleId) {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "SELECT categoryID FROM ArticleCategory WHERE ArticleID = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setString(1, articleId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getString("categoryID");
+                }
+            }
+        } catch (SQLException e) {
+            showError("Database Error", "Could not get category ID: " + e.getMessage());
+        }
+        return null;
     }
 
     // Core method to load FXML scenes with CSS

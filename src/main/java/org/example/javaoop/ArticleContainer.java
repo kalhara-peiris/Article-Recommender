@@ -150,10 +150,6 @@ public class ArticleContainer {
         }, executorService);
     }
 
-    public void setCurrentUsername(String username) {
-        this.currentUsername = username;
-        this.currentUser = new User(username);
-    }
 
     public void setArticleData(String articleId, String title, String url, String category, String username) {
         CompletableFuture.runAsync(() -> {

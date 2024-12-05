@@ -127,6 +127,110 @@ public class RecommendController extends categoryController {
 
     @Override
     protected void loadCategoryArticles() {
+        CompletableFuture.runAsync(() -> {
+            try {
+                if (currentUser == null || currentUser.getUsername() == null) {
+                    Platform.runLater(() -> showError("Error", "No user is currently logged in"));
+                    return;
+                }
+
+                boolean hasInteractions = dbHandler.hasUserInteractions(currentUser.getUsername());
+                List<Article> articles;
+
+                if (hasInteractions) {
+                    Map<String, Double> preferences = dbHandler.getUserPreferences(currentUser.getUsername());
+                    articles = dbHandler.getPersonalizedArticles(currentUser.getUsername(), preferences);
+                } else {
+                    articles = dbHandler.getRandomArticles(9);
+                }
+
+                Platform.runLater(() -> {
+                    currentArticles.clear();
+                    currentArticles.addAll(articles);
+                    displayCurrentArticles();
+                });
+            } catch (SQLException e) {
+                Platform.runLater(() ->
+                        showError("Database Error", "Error loading articles: " + e.getMessage()));
+            }
+        }, executorService);
+    }
+    @Override
+    protected void showArticleContent(Article article) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                if (currentUser == null) {
+                    Platform.runLater(() -> showError("Error", "No user is currently logged in"));
+                    return;
+                }
+
+                currentUser.readArticle(article.getArticleId());
+
+                Platform.runLater(() -> {
+                    try {
+                        loadArticleView(article);
+                    } catch (IOException e) {
+                        showError("Error", "Could not load article detail view: " + e.getMessage());
+                    }
+                });
+            } catch (SQLException e) {
+                Platform.runLater(() ->
+                        showError("Database Error", "Could not record read interaction: " + e.getMessage())
+                );
+            }
+        }, executorService);
+    }
+
+    @Override
+    protected void handleSkipButton() {
+        CompletableFuture.runAsync(() -> {
+            try {
+                if (currentUser == null) {
+                    Platform.runLater(() -> showError("Error", "No user is currently logged in"));
+                    return;
+                }
+
+                // Process skip for each article in the current batch
+                for (int i = 0; i < 3; i++) {
+                    int articleIndex = currentIndex + i;
+                    if (articleIndex < currentArticles.size()) {
+                        Article article = currentArticles.get(articleIndex);
+                        currentUser.skipArticle(article.getArticleId());
+                    }
+                }
+
+                currentIndex += 3;
+                Platform.runLater(this::displayCurrentArticles);
+
+            } catch (SQLException e) {
+                Platform.runLater(() ->
+                        showError("Error", "Failed to process skip: " + e.getMessage())
+                );
+            }
+        }, executorService);
+    }
+
+    private void loadArticleView(Article article) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("articleContainer.fxml"));
+        Scene scene = new Scene(loader.load());
+        scene.getStylesheets().add(getClass().getResource("articleContainer.css").toExternalForm());
+
+        ArticleContainer controller = loader.getController();
+        controller.setArticleData(
+                article.getArticleId(),
+                article.getTitle(),
+                article.getUrl(),
+                getCategoryNameArticle(article),
+                currentUser.getUsername()
+        );
+
+        Stage stage = (Stage) searchField.getScene().getWindow();
+        stage.setScene(scene);
+        stage.show();
+    }
+
+
+    protected void loadCategoryArticle() {
         System.out.println("Loading articles for user: " + currentUser.getUsername());
         if (currentUser.getUsername() == null || currentUser.getUsername().trim().isEmpty()) {
             System.out.println("Username is null or empty, skipping article loading");
@@ -277,56 +381,7 @@ public class RecommendController extends categoryController {
         return preferences;
     }
 
-    @Override
-    protected void showArticleContent(Article article) {
-        CompletableFuture.runAsync(() -> {
-            try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String username = User.getCurrentUsername();
-                if(username==null){
-                    Platform.runLater(() -> showError("Error","No user is currently logged in"));
-                    return;
-                }
-                String query = "INSERT INTO userinteraction (interactionID, username, ArticleID, interactionType) " +
-                        "VALUES (?, ?, ?, ?)";
-                try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                    pstmt.setString(1, UUID.randomUUID().toString());
-                    pstmt.setString(2, currentUser.getUsername());
-                    pstmt.setString(3, article.getArticleId());
-                    pstmt.setString(4, "READ");
-                    pstmt.executeUpdate();
-                }
-                DB.updatePreferenceScore(currentUser.getUsername(),getCategoryId(article.getArticleId()), 3);
 
-                Platform.runLater(() -> {
-                    try {
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("articleContainer.fxml"));
-                        Scene scene = new Scene(loader.load());
-                        scene.getStylesheets().add(getClass().getResource("articleContainer.css").toExternalForm());
-
-                        ArticleContainer controller = loader.getController();
-
-                        controller.setArticleData(
-                                article.getArticleId(),
-                                article.getTitle(),
-                                article.getUrl(),
-                                getCategoryNameArticle(article),
-                                currentUser.getUsername()
-                        );
-
-                        Stage stage = (Stage) searchField.getScene().getWindow();
-                        stage.setScene(scene);
-                        stage.show();
-                    } catch (IOException e) {
-                        showError("Error", "Could not load article detail view: " + e.getMessage());
-                    }
-                });
-            } catch (SQLException e) {
-                Platform.runLater(() ->
-                        showError("Database Error", "Could not record read interaction: " + e.getMessage())
-                );
-            }
-        }, executorService);
-    }
     protected String getCategoryId(String articleId) {
         try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String query = "SELECT categoryID FROM ArticleCategory WHERE ArticleID = ?";
@@ -392,45 +447,7 @@ public class RecommendController extends categoryController {
         }
     }
 
-    @Override
-    protected void handleSkipButton() {
-        CompletableFuture.runAsync(() -> {
-            try {
-                String username = User.getCurrentUsername();
-                if (username == null) {
-                    Platform.runLater(() -> showError("Error", "No user is currently logged in"));
-                    return;
-                }
-                if (DB == null) {
-                    DB = new DBHandler(); // Initialize if not already done
-                }
-                // Record skip interactions for the current batch of articles
-                for (int i = 0; i < 3; i++) {
-                    int articleIndex = currentIndex + i;
-                    if (articleIndex < currentArticles.size()) {
-                        Article article = currentArticles.get(articleIndex);
-                        recordInteraction(article.getArticleId(), "SKIP");
-                        // Update preference score for the skipped article's category
-                        String categoryId = getCategoryId(article.getArticleId());
-                        if (categoryId != null) {
-                            DB.updatePreferenceScore(currentUser.getUsername(), categoryId, -1);
-                        }
-                    }
-                }
 
-                // Increment the index to show next batch of articles
-                currentIndex += 3;
-
-                // Update the display on the UI thread
-                Platform.runLater(this::displayCurrentArticles);
-
-            } catch (Exception e) {
-                Platform.runLater(() ->
-                        showError("Error", "Failed to process skip: " + e.getMessage())
-                );
-            }
-        }, executorService);
-    }
 
     private void recordInteraction(String articleId, String interactionType) {
         try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {

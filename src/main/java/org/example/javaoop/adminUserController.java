@@ -140,27 +140,6 @@ public class adminUserController implements Initializable {
         logoutBtn.setOnAction(e -> handleLogout());
     }
 
-    @FXML
-    public void loadArticle(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("adminViewArticle.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
-        scene.getStylesheets().add(getClass().getResource("adminArticleView.css").toExternalForm());
-        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        stage.setTitle("Article Management");
-        stage.setScene(scene);
-        stage.show();
-    }
-
-    @FXML
-    public void loadDashboard(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("adminInterface.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
-        scene.getStylesheets().add(getClass().getResource("adminUI.css").toExternalForm());
-        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        stage.setTitle("Admin Dashboard");
-        stage.setScene(scene);
-        stage.show();
-    }
 
     private void handleDashboard() {
         try {

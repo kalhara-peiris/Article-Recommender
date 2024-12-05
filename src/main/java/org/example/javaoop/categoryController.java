@@ -57,6 +57,7 @@ public abstract class categoryController extends CatergorizedArticles {
     public abstract String getCategoryId();
 
     public abstract String getCategoryCssFile();
+    protected DBHandler dbHandler;
 
     public categoryController() {
         super(Runtime.getRuntime().availableProcessors() * 2);
@@ -66,7 +67,52 @@ public abstract class categoryController extends CatergorizedArticles {
         dbOperationProcessor = new Thread(this::processDbOperationQueue);
         dbOperationProcessor.setDaemon(true);
         dbOperationProcessor.start();
+        try {
+            dbHandler = new DBHandler();
+        } catch (Exception e) {
+            showError("Database Error", "Failed to initialize database connection");
+        }
     }
+
+    protected void loadCategoryArticles() {
+        CompletableFuture.runAsync(() -> {
+            try {
+                List<Article> articles = dbHandler.getCategoryArticles(getCategoryId());
+                Platform.runLater(() -> {
+                    currentArticles.clear();
+                    currentArticles.addAll(articles);
+                    displayCurrentArticles();
+                });
+            } catch (SQLException e) {
+                Platform.runLater(() ->
+                        showError("Database Error", "Error loading articles: " + e.getMessage()));
+            }
+        }, executorService);
+    }
+
+    protected void searchArticles(String searchTerm) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                if (searchTerm == null || searchTerm.trim().isEmpty()) {
+                    loadCategoryArticles();
+                    return;
+                }
+                List<Article> articles = dbHandler.searchCategoryArticles(getCategoryId(), searchTerm);
+                Platform.runLater(() -> {
+                    currentArticles.clear();
+                    currentArticles.addAll(articles);
+                    currentIndex = 0;
+                    displayCurrentArticles();
+                });
+            } catch (SQLException e) {
+                Platform.runLater(() ->
+                        showError("Search Error", "Error searching articles: " + e.getMessage()));
+            }
+        }, executorService);
+    }
+
+
+
 
     private void processDbOperationQueue() {
         while (!Thread.currentThread().isInterrupted()) {
@@ -96,10 +142,10 @@ public abstract class categoryController extends CatergorizedArticles {
     }
 
     private void initializeUser() {
-       String username = User.getCurrentUsername();
-       if(username !=null && !username.trim().isEmpty()){
-           this.currentUser=new User(username);
-       }
+        String username = User.getCurrentUsername();
+        if(username !=null && !username.trim().isEmpty()){
+            this.currentUser=new User(username);
+        }
     }
 
     private void setupEventHandlers() {
@@ -108,72 +154,7 @@ public abstract class categoryController extends CatergorizedArticles {
                 searchArticles(newValue));
     }
 
-    protected void loadCategoryArticles() {
-        CompletableFuture.runAsync(() -> {
-            currentArticles.clear();
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String query = "SELECT * FROM articlecategory WHERE categoryID = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                    stmt.setString(1, getCategoryId());
-                    ResultSet rs = stmt.executeQuery();
 
-                    List<Article> newArticles = new ArrayList<>();
-                    while (rs.next()) {
-                        Article article = new Article(
-                                rs.getString("ArticleID"),
-                                rs.getString("title"),
-                                rs.getString("url")
-                        );
-                        newArticles.add(article);
-                    }
-
-                    Platform.runLater(() -> {
-                        currentArticles.addAll(newArticles);
-                        displayCurrentArticles();
-                    });
-                }
-            } catch (SQLException e) {
-                Platform.runLater(() -> showError("Database Error", "Error loading articles: " + e.getMessage()));
-            }
-        }, executorService);
-    }
-
-    protected void searchArticles(String searchTerm) {
-        CompletableFuture.runAsync(() -> {
-            if (searchTerm == null || searchTerm.trim().isEmpty()) {
-                loadCategoryArticles();
-                return;
-            }
-
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String query = "SELECT * FROM ArticleCategory WHERE categoryID = ? AND title LIKE ?";
-                try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                    stmt.setString(1, getCategoryId());
-                    stmt.setString(2, "%" + searchTerm + "%");
-                    ResultSet rs = stmt.executeQuery();
-
-                    List<Article> searchResults = new ArrayList<>();
-                    while (rs.next()) {
-                        Article article = new Article(
-                                rs.getString("ArticleID"),
-                                rs.getString("title"),
-                                rs.getString("url")
-                        );
-                        searchResults.add(article);
-                    }
-
-                    Platform.runLater(() -> {
-                        currentArticles.clear();
-                        currentArticles.addAll(searchResults);
-                        currentIndex = 0;
-                        displayCurrentArticles();
-                    });
-                }
-            } catch (SQLException e) {
-                Platform.runLater(() -> showError("Search Error", "Error searching articles: " + e.getMessage()));
-            }
-        }, executorService);
-    }
     @FXML
     protected void handleSkipButton() {
         CompletableFuture.runAsync(() -> {
@@ -402,6 +383,4 @@ public abstract class categoryController extends CatergorizedArticles {
             Thread.currentThread().interrupt();
         }
     }
-
-
 }

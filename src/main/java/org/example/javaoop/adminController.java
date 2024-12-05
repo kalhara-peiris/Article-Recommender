@@ -142,6 +142,63 @@ public class adminController {
         new Thread(collectionTask).start();
     }
 
+    @FXML
+    private void handleStartCategorizations() {
+        if (isCategorizationRunning) return;
+
+        startCategorizationButton.setDisable(true);
+        startCollectionButton.setDisable(true);
+        isCategorizationRunning = true;
+        initializeCategorizationUI();
+
+        Task<Void> categorizationTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                admin.categorizeArticles(
+                        // Total uncategorized callback
+                        (totalUncategorized) -> {
+                            if (totalUncategorized == 0) {
+                                Platform.runLater(() -> {
+                                    statusText.setText("No articles to categorize");
+                                    currentStatusLabel.setText("All articles are already categorized");
+                                    progressBar.setProgress(1.0);
+                                });
+                            }
+                        },
+                        // Progress callback
+                        (processed, total) -> {
+                            double progress = (double) processed / total;
+                            Platform.runLater(() -> updateCategorizationProgress(processed, total, progress));
+                        }
+                );
+                return null;
+            }
+
+            @Override
+            protected void succeeded() {
+                Platform.runLater(() -> {
+                    updateUIAfterCategorization();
+                    isCategorizationRunning = false;
+                    startCategorizationButton.setDisable(false);
+                    startCollectionButton.setDisable(false);
+                });
+            }
+
+            @Override
+            protected void failed() {
+                Platform.runLater(() -> {
+                    statusText.setText("Categorization Failed");
+                    currentStatusLabel.setText("Error during categorization");
+                    isCategorizationRunning = false;
+                    startCategorizationButton.setDisable(false);
+                    startCollectionButton.setDisable(false);
+                });
+            }
+        };
+
+        new Thread(categorizationTask).start();
+    }
+
 
     @FXML
     private void handleStartCategorization() {

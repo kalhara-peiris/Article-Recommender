@@ -40,7 +40,7 @@ public class userProfileController {
     @FXML
     public void initialize() {
         Platform.runLater(() -> {
-            // Get username from User class instead of stage userData
+
             String username = User.getCurrentUsername();
             if (username != null) {
                 currentUsername = username;
