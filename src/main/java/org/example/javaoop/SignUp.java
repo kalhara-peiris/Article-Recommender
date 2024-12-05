@@ -97,10 +97,8 @@ public class SignUp {
         }
         return true;
     }
-
-
     @FXML
-    public void loadSignIn(ActionEvent event) throws IOException {
+    public void loadSignIns(ActionEvent event) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("signIn.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 600);
         scene.getStylesheets().add(getClass().getResource("signIn.css").toExternalForm());
@@ -109,6 +107,8 @@ public class SignUp {
         stage.setScene(scene);
         stage.show();
     }
+
+
 
     private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);

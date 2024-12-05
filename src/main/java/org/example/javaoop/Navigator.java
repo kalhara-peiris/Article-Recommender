@@ -59,49 +59,6 @@ public class Navigator {
     }
 
 
-    // Add helper method to get category name
-    private static String getCategoryNameForArticle(String articleId) {
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String query = "SELECT categoryID FROM ArticleCategory WHERE ArticleID = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                pstmt.setString(1, articleId);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    String categoryId = rs.getString("categoryID");
-                    switch (categoryId) {
-                        case "C01": return "Technology";
-                        case "C02": return "Health";
-                        case "C03": return "Sports";
-                        case "C04": return "AI";
-                        case "C06": return "Science";
-                        default: return "Unknown";
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            showError("Database Error", "Could not get category name: " + e.getMessage());
-            return "Unknown";
-        }
-        return "Unknown";
-    }
-
-
-    // Helper method to get category ID for an article
-    private static String getCategoryIdForArticle(String articleId) {
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String query = "SELECT categoryID FROM ArticleCategory WHERE ArticleID = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                pstmt.setString(1, articleId);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    return rs.getString("categoryID");
-                }
-            }
-        } catch (SQLException e) {
-            showError("Database Error", "Could not get category ID: " + e.getMessage());
-        }
-        return null;
-    }
 
     // Core method to load FXML scenes with CSS
     private static void loadScene(Stage stage, String fxmlFile, String cssFile) {

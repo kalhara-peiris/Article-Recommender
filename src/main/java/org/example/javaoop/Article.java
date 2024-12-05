@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -31,7 +32,7 @@ Article {
     private final String title;
     private final String url;
     private String category;
-
+    public ArrayList<User> users = new ArrayList<>();
 
 
     public Article(String articleId, String title, String url) {
@@ -50,7 +51,18 @@ Article {
         title="";
         url="";
     }
+    public Article(String articleId){
+        this.articleId=articleId;
+        this.title="";
+        this.url="";
+        addUser(new User(User.getCurrentUsername()));
+    }
 
+    public void addUser(User user) {
+        if (!users.contains(user)) {
+            users.add(user);
+        }
+    }
     public String getArticleId() {
         return articleId;
     }
@@ -79,7 +91,7 @@ Article {
     public void collectArticles(ProgressCallback progressCallback) {
         Map<String, Integer> successCounts = new HashMap<>();
         OkHttpClient client = new OkHttpClient();
-        int totalTargetArticles=50;
+        int totalTargetArticles=10;
         int currentTotalArticles=0;
 
         // Initialize success counts
@@ -95,7 +107,7 @@ Article {
 
             System.out.println("\nCollecting articles for category: " + category);
 
-            while (successCounts.get(category) < 10 && pageNumber <= maxAttempts) {
+            while (successCounts.get(category) < 2 && pageNumber <= maxAttempts) {
                 try {
                     // For AI category, use a different approach
                     String apiUrl;
@@ -123,7 +135,7 @@ Article {
                     JSONArray articles = jsonResponse.getJSONArray("articles");
                     if (articles.length() == 0) break;
 
-                    for (int i = 0; i < articles.length() && successCounts.get(category) < 10; i++) {
+                    for (int i = 0; i < articles.length() && successCounts.get(category) < 2; i++) {
                         JSONObject article = articles.getJSONObject(i);
                         String title = article.optString("title", "").trim();
                         String articleUrl = article.optString("url", "").trim();

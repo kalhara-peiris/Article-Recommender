@@ -25,7 +25,7 @@ public class Admin extends User {
         this.dbHandler = new DBHandler();
         this.articleCollector = new Article();
         this.categorizer = new CatergorizedArticles(Runtime.getRuntime().availableProcessors() * 2);
-        this.totalTargetArticles = 50;
+        this.totalTargetArticles = 10;
     }
 
     // Original methods

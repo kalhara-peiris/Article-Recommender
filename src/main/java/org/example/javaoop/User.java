@@ -17,6 +17,11 @@ public class User {
         this.username = username;
         this.password = password;
     }
+
+
+
+
+
     protected static final AtomicReference<String> currentUsername = new AtomicReference<>();
 
     public static void setCurrentUsername(String username) {
@@ -28,6 +33,12 @@ public class User {
     }
     public String getUsername(){
         return username;
+    }
+
+    public void addArticles(Article article){
+        if(!articles.contains(article)){
+            articles.add(article);
+        }
     }
 
 
@@ -42,6 +53,7 @@ public class User {
 
     public void readArticle(String articleId) throws SQLException {
         dbManager.recordInteraction(username, articleId, "READ");
+        addArticles(new Article(articleId));
         String categoryId = dbManager.getCategoryForArticle(articleId);
         if (categoryId != null) {
             dbManager.updatePreferenceScore(username, categoryId, 3);
