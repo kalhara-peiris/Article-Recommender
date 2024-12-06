@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 public class adminUserController implements Initializable {
+    // FXML injected UI components
     @FXML private Button dashboardBtn;
     @FXML private Button articlesBtn;
     @FXML private Button usersBtn;
@@ -31,10 +32,12 @@ public class adminUserController implements Initializable {
     @FXML private VBox userList;
     @FXML private Pagination userPagination;
 
+    // Constants and instance variables
     private static final int ITEMS_PER_PAGE = 10;
     private ObservableList<User> users;
     private Admin admin;
 
+    // Initialize controller
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         admin = new Admin();
@@ -45,6 +48,7 @@ public class adminUserController implements Initializable {
         setupButtons();
     }
 
+    // Load users from database
     private void loadUsers() {
         clearUserList();
         try {
@@ -56,6 +60,7 @@ public class adminUserController implements Initializable {
         }
     }
 
+    // Delete user from database and update UI
     private void deleteUser(String username) {
         try {
             if (admin.deleteUser(username)) {
@@ -69,6 +74,7 @@ public class adminUserController implements Initializable {
         }
     }
 
+    // Add user item to the UI list
     private void addUserToView(User user) {
         VBox userItem = new VBox();
         userItem.getStyleClass().add("user-item");
@@ -98,6 +104,7 @@ public class adminUserController implements Initializable {
         userList.getChildren().add(userItem);
     }
 
+    // Setup pagination controls
     private void setupPagination() {
         int pageCount = (int) Math.ceil(users.size() / (double) ITEMS_PER_PAGE);
         pageCount = Math.max(1, pageCount);
@@ -106,6 +113,7 @@ public class adminUserController implements Initializable {
                 showPage(newIndex.intValue()));
     }
 
+    // Display users for current page
     private void showPage(int pageIndex) {
         clearUserList();
         int fromIndex = pageIndex * ITEMS_PER_PAGE;
@@ -116,12 +124,14 @@ public class adminUserController implements Initializable {
         }
     }
 
+    // Setup search functionality
     private void setupSearchListener() {
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             filterUsers(newValue);
         });
     }
 
+    // Filter users based on search text
     private void filterUsers(String searchText) {
         try {
             ObservableList<User> filteredUsers = admin.searchUsers(searchText);
@@ -134,13 +144,14 @@ public class adminUserController implements Initializable {
         }
     }
 
+    // Setup navigation button handlers
     private void setupButtons() {
         dashboardBtn.setOnAction(e -> handleDashboard());
         articlesBtn.setOnAction(e -> handleArticles());
         logoutBtn.setOnAction(e -> handleLogout());
     }
 
-
+    // Navigate to dashboard
     private void handleDashboard() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("adminInterface.fxml"));
@@ -155,6 +166,7 @@ public class adminUserController implements Initializable {
         }
     }
 
+    // Navigate to articles view
     private void handleArticles() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("adminViewArticle.fxml"));
@@ -169,6 +181,7 @@ public class adminUserController implements Initializable {
         }
     }
 
+    // Handle logout action
     private void handleLogout() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("signUp.fxml"));
@@ -183,10 +196,12 @@ public class adminUserController implements Initializable {
         }
     }
 
+    // Clear the user list view
     private void clearUserList() {
         userList.getChildren().clear();
     }
 
+    // Display error dialog
     private void showError(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

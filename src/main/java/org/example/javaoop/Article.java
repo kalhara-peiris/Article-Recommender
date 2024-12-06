@@ -1,6 +1,5 @@
 package org.example.javaoop;
 
-
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -20,49 +19,61 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class
-Article {
+public class Article {
+    // News API key for fetching articles
     private static final String API_KEY = "4e6f822740374499be7c2a5f6d721592";
 
-    //Make them protected so child class can access
+    // Database connection details
     protected static final String dbUrl = "jdbc:mysql://localhost:3306/javacw";
     protected static final String dbUser = "root";
     protected static final String dbPassword = "";
+
+    // Article properties
     private final String articleId;
     private final String title;
     private final String url;
     private String category;
     public ArrayList<User> users = new ArrayList<>();
 
-
+    // Constructor with basic article info
     public Article(String articleId, String title, String url) {
         this.articleId = articleId;
         this.title = title;
         this.url = url;
     }
-    public Article(String articleId, String title, String url,String category) {
+
+    // Constructor with category
+    public Article(String articleId, String title, String url, String category) {
         this.articleId = articleId;
         this.title = title;
         this.url = url;
-        this.category=category;
+        this.category = category;
     }
-    public Article(){
-        articleId="";
-        title="";
-        url="";
+
+    // Default constructor
+    public Article() {
+        articleId = "";
+        title = "";
+        url = "";
     }
-    public Article(String articleId){
-        this.articleId=articleId;
-        this.title="";
-        this.url="";
+
+    // Constructor with just article ID
+    public Article(String articleId) {
+        this.articleId = articleId;
+        this.title = "";
+        this.url = "";
         addUser(new User(User.getCurrentUsername()));
     }
 
+    // Add user to article's user list
     public void addUser(User user) {
         if (!users.contains(user)) {
             users.add(user);
+            user.addArticles(this);
         }
     }
+
+    // Getters
     public String getArticleId() {
         return articleId;
     }
@@ -75,11 +86,12 @@ Article {
         return url;
     }
 
+    // Get database connection
     protected Connection getConnection() throws SQLException {
         return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
     }
 
-    // Map API query terms to category names for better results
+    // Map categories to API query terms
     private Map<String, String> categoryQueries = new HashMap<>() {{
         put("technology", "Technology");
         put("health", "Health");
@@ -88,28 +100,31 @@ Article {
         put("science", "Science");
     }};
 
+    // Main method to collect articles from News API
     public void collectArticles(ProgressCallback progressCallback) {
         Map<String, Integer> successCounts = new HashMap<>();
         OkHttpClient client = new OkHttpClient();
-        int totalTargetArticles=10;
-        int currentTotalArticles=0;
+        int totalTargetArticles = 10;
+        int currentTotalArticles = 0;
 
-        // Initialize success counts
+        // Initialize success counter for each category
         for (String category : categoryQueries.values()) {
             successCounts.put(category, 0);
         }
 
+        // Iterate through each category to collect articles
         for (Map.Entry<String, String> entry : categoryQueries.entrySet()) {
             String queryTerm = entry.getKey();
             String category = entry.getValue();
             int pageNumber = 1;
-            int maxAttempts = 3; // Try up to 3 pages per category
+            int maxAttempts = 3;
 
             System.out.println("\nCollecting articles for category: " + category);
 
+            // Try to collect articles until target reached or max attempts exceeded
             while (successCounts.get(category) < 2 && pageNumber <= maxAttempts) {
                 try {
-                    // For AI category, use a different approach
+                    // Build API URL based on category
                     String apiUrl;
                     if (category.equals("AI")) {
                         apiUrl = String.format("https://newsapi.org/v2/everything?q=artificial intelligence OR machine learning&language=en&pageSize=100&page=%d&apiKey=%s",
@@ -119,6 +134,7 @@ Article {
                                 queryTerm, pageNumber, API_KEY);
                     }
 
+                    // Make API request
                     Request request = new Request.Builder()
                             .url(apiUrl)
                             .build();
@@ -127,11 +143,13 @@ Article {
                     String responseData = response.body().string();
                     JSONObject jsonResponse = new JSONObject(responseData);
 
+                    // Handle API errors
                     if (jsonResponse.getString("status").equals("error")) {
                         System.out.println("API Error for " + category + ": " + jsonResponse.getString("message"));
                         break;
                     }
 
+                    // Process articles from response
                     JSONArray articles = jsonResponse.getJSONArray("articles");
                     if (articles.length() == 0) break;
 
@@ -140,7 +158,7 @@ Article {
                         String title = article.optString("title", "").trim();
                         String articleUrl = article.optString("url", "").trim();
 
-                        // Skip problematic URLs and empty titles
+                        // Skip invalid articles
                         if (articleUrl.isEmpty() || title.isEmpty() ||
                                 articleUrl.contains("news.google.com") ||
                                 articleUrl.contains("youtube.com") ||
@@ -149,7 +167,7 @@ Article {
                             continue;
                         }
 
-                        // Check if article is fetchable with Jsoup
+                        // Verify and store article
                         if (canFetchContent(articleUrl)) {
                             if (storeArticle(title, articleUrl)) {
                                 currentTotalArticles++;
@@ -162,8 +180,7 @@ Article {
                     }
 
                     pageNumber++;
-                    // Add small delay to prevent API rate limiting
-                    Thread.sleep(100);
+                    Thread.sleep(100); // Rate limiting prevention
 
                 } catch (Exception e) {
                     System.err.println("Error processing " + category + ": " + e.getMessage());
@@ -171,7 +188,7 @@ Article {
             }
         }
 
-        // Print final results
+        // Print collection summary
         System.out.println("\nArticle Collection Summary:");
         System.out.println("------------------------");
         for (Map.Entry<String, Integer> entry : successCounts.entrySet()) {
@@ -179,10 +196,13 @@ Article {
                     entry.getKey(), entry.getValue());
         }
     }
+
+    // Progress callback interface
     public interface ProgressCallback {
         void onProgress(double progress);
     }
 
+    // Verify if article content can be fetched
     private boolean canFetchContent(String url) {
         try {
             Document doc = Jsoup.connect(url)
@@ -209,6 +229,7 @@ Article {
         }
     }
 
+    // Store article in database
     private boolean storeArticle(String title, String url) {
         String insertQuery = "INSERT IGNORE INTO article (ArticleID, title, url) VALUES (?, ?, ?)";
 

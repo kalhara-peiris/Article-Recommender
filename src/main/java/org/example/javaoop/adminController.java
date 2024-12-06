@@ -18,39 +18,35 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class adminController {
+    // Component for article categorization
     private CatergorizedArticles categorizer;
-    @FXML
-    private Button startCollectionButton;
-    @FXML
-    private Button startCategorizationButton;
-    @FXML
-    private ProgressBar progressBar;
-    @FXML
-    private Label statusText;
-    @FXML
-    private Label userCount;
-    @FXML
-    private Label progressText;
-    @FXML
-    private Label collectionRateLabel;
-    @FXML
-    private Label articleCountLabel;
-    @FXML
-    private Label currentStatusLabel;
-    @FXML
-    private Label lastUpdatedLabel;
+
+    // FXML UI components
+    @FXML private Button startCollectionButton;
+    @FXML private Button startCategorizationButton;
+    @FXML private ProgressBar progressBar;
+    @FXML private Label statusText;
+    @FXML private Label userCount;
+    @FXML private Label progressText;
+    @FXML private Label collectionRateLabel;
+    @FXML private Label articleCountLabel;
+    @FXML private Label currentStatusLabel;
+    @FXML private Label lastUpdatedLabel;
 
     private Admin admin;
     private boolean isCategorizationRunning = false;
 
+    // Initialize controller when FXML loads
     @FXML
     public void initialize() {
         admin = new Admin();
+        // Set up categorizer with number of threads based on CPU cores
         categorizer = new CatergorizedArticles(Runtime.getRuntime().availableProcessors() * 2);
         updateArticleCount();
         updateUserCount();
     }
 
+    // Update the total article count display
     private void updateArticleCount() {
         try {
             int totalArticles = admin.getTotalArticleCount();
@@ -61,6 +57,7 @@ public class adminController {
         }
     }
 
+    // Update the total user count display
     private void updateUserCount() {
         try {
             int totalUsers = admin.getTotalUserCount();
@@ -71,6 +68,7 @@ public class adminController {
         }
     }
 
+    // Navigate to article management view
     @FXML
     public void loadArticle(ActionEvent event) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("adminViewArticle.fxml"));
@@ -82,6 +80,7 @@ public class adminController {
         stage.show();
     }
 
+    // Navigate to user management view
     @FXML
     public void loadUser(ActionEvent event) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("adminUserView.fxml"));
@@ -93,6 +92,7 @@ public class adminController {
         stage.show();
     }
 
+    // Logout and return to signup screen
     @FXML
     public void logOut(ActionEvent event) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("signUp.fxml"));
@@ -104,6 +104,7 @@ public class adminController {
         stage.show();
     }
 
+    // Start collecting articles from sources
     @FXML
     private void handleStartCollection() {
         startCollectionButton.setDisable(true);
@@ -142,6 +143,7 @@ public class adminController {
         new Thread(collectionTask).start();
     }
 
+    // Start categorizing collected articles
     @FXML
     private void handleStartCategorization() {
         if (isCategorizationRunning) return;
@@ -154,7 +156,7 @@ public class adminController {
         Task<Void> categorizationTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                // Get count of uncategorized articles
+                // Check for uncategorized articles
                 int totalUncategorized = getUncategorizedArticleCount();
 
                 if (totalUncategorized == 0) {
@@ -166,13 +168,12 @@ public class adminController {
                     return null;
                 }
 
-                // Set up progress callback
+                // Set up progress tracking
                 categorizer.setCategoryProgressCallback((processed, total) -> {
                     double progress = (double) processed / total;
                     Platform.runLater(() -> updateCategorizationProgress(processed, total, progress));
                 });
 
-                // Start categorization
                 categorizer.processCategorization();
                 return null;
             }
@@ -202,6 +203,7 @@ public class adminController {
         new Thread(categorizationTask).start();
     }
 
+    // Set initial UI state for collection process
     private void initializeCollectionUI() {
         progressBar.setProgress(0);
         statusText.setText("Collecting articles...");
@@ -210,6 +212,7 @@ public class adminController {
         collectionRateLabel.setText("Average collection rate: 0 articles/minute");
     }
 
+    // Set initial UI state for categorization process
     private void initializeCategorizationUI() {
         progressBar.setProgress(0);
         statusText.setText("Categorizing articles...");
@@ -218,6 +221,7 @@ public class adminController {
         collectionRateLabel.setText("Processing articles...");
     }
 
+    // Update UI during collection process
     private void updateCollectionProgress(double progress) {
         progressBar.setProgress(progress);
         int collectedArticles = (int) (progress * admin.getTotalTargetArticles());
@@ -230,12 +234,14 @@ public class adminController {
                 Math.max(1, (int)(collectedArticles * 2))));
     }
 
+    // Update UI during categorization process
     private void updateCategorizationProgress(int processed, int total, double progress) {
         progressBar.setProgress(progress);
         progressText.setText(String.format("%d articles categorized out of %d", processed, total));
         collectionRateLabel.setText(String.format("Processing articles... %d%%", (int)(progress * 100)));
     }
 
+    // Update UI after collection completes
     private void updateUIAfterCollection() {
         updateArticleCount();
         LocalDateTime now = LocalDateTime.now();
@@ -247,6 +253,7 @@ public class adminController {
         progressText.setText(String.format("%d articles collected", admin.getTotalTargetArticles()));
     }
 
+    // Update UI after categorization completes
     private void updateUIAfterCategorization() {
         LocalDateTime now = LocalDateTime.now();
         lastUpdatedLabel.setText("Last Updated: " +
@@ -257,6 +264,7 @@ public class adminController {
         updateArticleCount();
     }
 
+    // Query database for uncategorized article count
     private int getUncategorizedArticleCount() {
         try (Connection conn = DriverManager.getConnection(Article.dbUrl, Article.dbUser, Article.dbPassword)) {
             String countQuery = "SELECT COUNT(*) AS total FROM Article a " +
@@ -272,5 +280,4 @@ public class adminController {
         }
         return 0;
     }
-
 }
